@@ -1,1 +1,10 @@
 /* App-level styles — add as needed */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+}
