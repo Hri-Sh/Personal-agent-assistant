@@ -1,0 +1,55 @@
+.home-container{
+    width: 100%;
+    min-height: 100vh;
+    padding:20px 14px;
+    
+
+}
+.header-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
+}
+#QuickAddBtn{
+    background: var(--accent);
+    padding: 4px 9px 4px 5px;
+    border-radius: 9px;
+    border: none;
+}
+.stats-row{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+}
+#events,#habits,#streak{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:4px;
+    text-align: center;
+    padding: 2px 5px 70px 5px;
+
+}
+.bottom-row{
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+#schedule,#goals,#AI-tip{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:4px;
+    text-align: center;
+    padding: 2px 5px 70px 5px;
+
+}
+#QuickAddBtn {
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+#QuickAddBtn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
