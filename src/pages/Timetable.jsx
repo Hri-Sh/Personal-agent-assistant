@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './Timetable.css'
+import AddEventModal from '../components/AddEventModal'
+import EventModal from '../components/EventModal'
 
 // Config
 const START_HOUR = 6   // 6am
@@ -9,11 +11,11 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 // Mock events — replace with Supabase data later
 const MOCK_EVENTS = [
-  { id: 1, title: 'Morning Run',     day: 1, startHour: 7, startMin: 0, endHour: 8,  endMin: 0,  color: '#4ade80' },
-  { id: 2, title: 'CITS2200 Lecture',day: 1, startHour: 9, startMin: 0, endHour: 11, endMin: 0,  color: '#60a5fa' },
-  { id: 3, title: 'Gym',             day: 1, startHour: 17,startMin: 0, endHour: 18, endMin: 30, color: '#f87171' },
-  { id: 4, title: 'Study Block',     day: 3, startHour: 10,startMin: 0, endHour: 12, endMin: 0,  color: '#a78bfa' },
-  { id: 5, title: 'Weekly Review',   day: 0, startHour: 18,startMin: 0, endHour: 19, endMin: 0,  color: '#fb923c' },
+  { id: 1, title: 'Morning Run',     day: 1, startHour: 7, startMin: 0, endHour: 8,  endMin: 0, description:'',  color: '#4ade80' },
+  { id: 2, title: 'CITS2200 Lecture',day: 1, startHour: 9, startMin: 0, endHour: 11, endMin: 0, description:'',  color: '#60a5fa' },
+  { id: 3, title: 'Gym',             day: 1, startHour: 17,startMin: 0, endHour: 18, endMin: 30, description:'', color: '#f87171' },
+  { id: 4, title: 'Study Block',     day: 3, startHour: 10,startMin: 0, endHour: 12, endMin: 0, description:'',  color: '#a78bfa' },
+  { id: 5, title: 'Weekly Review',   day: 0, startHour: 18,startMin: 0, endHour: 19, endMin: 0, description:'',  color: '#fb923c' },
 ]
 
 function getWeekDates(offset = 0) {
@@ -41,6 +43,9 @@ function formatHour(h) {
 
 export default function Timetable() {
   const [weekOffset, setWeekOffset] = useState(0)
+  const [events, setEvents] = useState(MOCK_EVENTS)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
   const weekDates = getWeekDates(weekOffset)
 
   const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
@@ -61,7 +66,7 @@ export default function Timetable() {
           <button className="week-nav" onClick={() => setWeekOffset(o => o - 1)}>‹</button>
           <button className="today-btn" onClick={() => setWeekOffset(0)}>Today</button>
           <button className="week-nav" onClick={() => setWeekOffset(o => o + 1)}>›</button>
-          <button className="add-event-btn">+ Add Event</button>
+          <button className="add-event-btn" onClick={() => setShowModal(true)}>+ Add Event</button>
         </div>
       </div>
 
@@ -79,7 +84,7 @@ export default function Timetable() {
 
         {/* Day columns */}
         {weekDates.map((date, dayIndex) => {
-          const dayEvents = MOCK_EVENTS.filter(e => e.day === dayIndex)
+          const dayEvents = events.filter(e => e.day === dayIndex)
           return (
             <div key={dayIndex} className={`day-column ${isToday(date) ? 'today' : ''}`}>
               {/* Day header */}
@@ -106,6 +111,7 @@ export default function Timetable() {
                     <div
                       key={event.id}
                       className="event-card"
+                      onClick={() => setSelectedEvent(event)}
                       style={{
                         top: topOffset,
                         height,
@@ -131,6 +137,22 @@ export default function Timetable() {
           )
         })}
       </div>
+
+      {showModal && (
+        <AddEventModal
+          onAdd={event => setEvents(prev => [...prev, event])}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {selectedEvent && (
+        <EventModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onUpdate={updated => setEvents(prev => prev.map(e => e.id === updated.id ? updated : e))}
+          onDelete={id => setEvents(prev => prev.filter(e => e.id !== id))}
+        />
+      )}
     </div>
   )
 }
