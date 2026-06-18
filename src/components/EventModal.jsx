@@ -155,6 +155,14 @@ export default function EventModal({ event, onClose, onUpdate, onDelete }) {
                 ))}
               </div>
             </label>
+            <label>
+              Description
+            <textarea
+              value={form.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="Optional notes..."
+            />
+</label>
 
             <div className="modal-actions">
               <button type="button" className="cancel-btn" onClick={() => setMode('view')}>Cancel</button>
