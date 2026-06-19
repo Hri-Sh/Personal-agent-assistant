@@ -1,0 +1,151 @@
+/* ─── Habits Page ─────────────────────────────────────── */
+
+.habits-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 680px;
+}
+
+/* Header */
+.habits-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.habits-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.habits-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.add-habit-btn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.add-habit-btn:hover {
+  background: #0284c7;
+}
+
+/* Habit list */
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Habit card */
+.habit-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.habit-card:hover {
+  border-color: #3a3a3a;
+}
+
+.habit-card.completed {
+  opacity: 0.5;
+}
+
+/* Left color bar */
+.habit-color-dot {
+  width: 3px;
+  height: 36px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+/* Name + frequency */
+.habit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.habit-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.habit-frequency {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* Streak */
+.habit-streak {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Custom checkbox */
+.habit-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.habit-check:checked {
+  background: #4ade80;
+  border-color: #4ade80;
+}
+
+.habit-check:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #000;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.habit-check:hover:not(:checked) {
+  border-color: #4ade80;
+}
+
+@media (max-width: 600px) {
+  .habits-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

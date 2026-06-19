@@ -11,11 +11,11 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 // Mock events — replace with Supabase data later
 const MOCK_EVENTS = [
-  { id: 1, title: 'Morning Run',     day: 1, startHour: 7, startMin: 0, endHour: 8,  endMin: 0, description:'',  color: '#4ade80' },
-  { id: 2, title: 'CITS2200 Lecture',day: 1, startHour: 9, startMin: 0, endHour: 11, endMin: 0, description:'',  color: '#60a5fa' },
-  { id: 3, title: 'Gym',             day: 1, startHour: 17,startMin: 0, endHour: 18, endMin: 30, description:'', color: '#f87171' },
-  { id: 4, title: 'Study Block',     day: 3, startHour: 10,startMin: 0, endHour: 12, endMin: 0, description:'',  color: '#a78bfa' },
-  { id: 5, title: 'Weekly Review',   day: 0, startHour: 18,startMin: 0, endHour: 19, endMin: 0, description:'',  color: '#fb923c' },
+  { id: 1, title: 'Morning Run',     day: 1, startHour: 7, startMin: 0, endHour: 8,  endMin: 0, description:'Easy 5 km around the neighborhood to start the day.',  color: '#4ade80' },
+  { id: 2, title: 'CITS2200 Lecture',day: 1, startHour: 9, startMin: 0, endHour: 11, endMin: 0, description:'Attend the lecture and take notes on the week’s core concepts.',  color: '#60a5fa' },
+  { id: 3, title: 'Gym',             day: 1, startHour: 17,startMin: 0, endHour: 18, endMin: 30, description:'Upper-body strength session followed by a short cooldown.', color: '#f87171' },
+  { id: 4, title: 'Study Block',     day: 3, startHour: 10,startMin: 0, endHour: 12, endMin: 0, description:'Focus time for assignments, readings, and revision.',  color: '#a78bfa' },
+  { id: 5, title: 'Weekly Review',   day: 0, startHour: 18,startMin: 0, endHour: 19, endMin: 0, description:'Review the past week, adjust priorities, and plan ahead.',  color: '#fb923c' },
 ]
 
 function getWeekDates(offset = 0) {

@@ -106,3 +106,20 @@
   cursor: pointer;
   font-weight: 500;
 }
+
+.modal textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 72px;
+}
+
+.modal textarea:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}

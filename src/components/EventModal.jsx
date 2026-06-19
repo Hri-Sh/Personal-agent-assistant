@@ -95,7 +95,7 @@ export default function EventModal({ event, onClose, onUpdate, onDelete }) {
               </span>
             </div>
             {event.description?.trim() && (
-              <div className="event-detail-row">
+              <div className="event-detail-description">
                 <span className='detail-label'>Description</span>
                 <span>{event.description.trim()}</span>
               </div>
