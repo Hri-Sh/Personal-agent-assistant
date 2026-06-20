@@ -16,9 +16,9 @@ export default function Habits() {
       <div className="habits-header">
         <div>
           <h2>Habits</h2>
-          <span className="habits-date">{<span className="habits-date">
+          {<span className="habits-date">
   {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
-</span>}</span>
+</span>}
         </div>
         <button className="add-habit-btn">+ Add Habit</button>
       </div>
