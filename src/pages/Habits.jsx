@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './Habits.css'
+import AddHabitModal from '../components/AddHabitModal'
 
 const MOCK_HABITS = [
   { id: 1, name: 'Morning Run',   frequency: 'daily',    color: '#4ade80', completedDates: [] },
@@ -12,6 +13,7 @@ const MOCK_HABITS = [
 export default function Habits() {
   const today = new Date().toLocaleDateString('en-CA') // 'YYYY-MM-DD'
   const [habits, setHabits] = useState(MOCK_HABITS)
+  const [showModal, setShowModal] = useState(false)
 
   function calcStreak(completedDates) {
     let streak = 0
@@ -50,7 +52,7 @@ export default function Habits() {
             {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
         </div>
-        <button className="add-habit-btn">+ Add Habit</button>
+        <button className="add-habit-btn" onClick={() => setShowModal(true)}>+ Add Habit</button>
       </div>
 
       <div className="habits-list">
@@ -71,6 +73,12 @@ export default function Habits() {
           </div>
         ))}
       </div>
+      {showModal && (
+        <AddHabitModal
+          onAdd={habit => setHabits(prev => [...prev, habit])}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   )
 }
