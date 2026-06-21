@@ -21,7 +21,7 @@ When Hridayesh says "time to commit", "let's commit", or anything similar, updat
 - **React Router DOM** — client-side routing
 - **Lucide React** — icons
 - **Vanilla CSS** with CSS custom properties (no Tailwind, no CSS-in-JS)
-- **Supabase** — planned for DB + auth (not yet integrated)
+- **Supabase** — integrated for DB (`src/lib/supabase.js`, credentials in `.env`). Auth still planned.
 - **Claude/OpenAI API** — planned for AI assistant (not yet integrated)
 
 ---
@@ -52,6 +52,8 @@ src/
   main.jsx            # React entry point
   App.jsx             # Router setup + layout shell
   App.css             # .app-layout (flex row), .main-content (flex 1, padding 24px)
+  lib/
+    supabase.js       # createClient from VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
   components/
     Navbar.jsx        # Sidebar nav with Lucide icons + React Router Links
     Navbar.css
@@ -59,16 +61,28 @@ src/
     AddEventModal.css
     EventModal.jsx    # Modal for viewing + editing existing events (view/edit mode toggle)
     EventModal.css
+    AddHabitModal.jsx # Modal for creating habits
+    AddHabitModal.css
+    AddGoalModal.jsx  # Modal for creating goals
+    AddGoalModal.css
+    AddMealModal.jsx  # Modal for logging meals
+    AddMealModal.css
+    EditTargetsModal.jsx # Modal for editing daily calorie/protein targets
+    EditTargetsModal.css
+    AddListModal.jsx  # Modal for creating bucket lists
+    AddListModal.css
+    AddSkillModal.jsx # Modal for adding skills (name, category, parent)
+    AddSkillModal.css
   pages/
     Home.jsx          # Dashboard — hardcoded stats, schedule, goals, AI tip (all static for now)
     Home.css
     Timetable.jsx     # Weekly calendar grid — DONE (see below)
     Timetable.css
-    Habits.jsx        # Stub
-    Goals.jsx         # Stub
-    BucketList.jsx    # Stub
-    SkillTree.jsx     # Stub
-    Fitness.jsx       # Stub
+    Habits.jsx        # DONE (see below)
+    Goals.jsx         # DONE (see below)
+    BucketList.jsx    # DONE (see below)
+    SkillTree.jsx     # DONE (see below)
+    Fitness.jsx       # DONE (see below)
     Assistant.jsx     # Stub
 ```
 
@@ -130,9 +144,9 @@ Header row, stats row (Today's Events / Habits / Streak), bottom row with Today'
 
 **EventModal:** Two modes — `view` (shows title, day, time, duration, description with a divider) and `edit` (same fields as AddEventModal, pre-filled). Top bar has color chip + pencil icon (→ edit) + trash icon (delete) + X (close). Clicking overlay closes.
 
-### Habits (in progress)
+### Habits (done)
 
-Static layout done — habit cards render from `MOCK_HABITS` with color bar, name, frequency, streak count, and checkbox. Checkbox is custom styled (green checkmark on tick). No interactivity yet — checkbox toggle, streak calculation, and Add Habit modal are next.
+Fully wired to Supabase (`habits` + `habit_completions`). Habit cards render with color bar, name, frequency, streak count, and a custom green checkbox. Checking the box inserts/deletes a row in `habit_completions` for today. Add Habit modal (`AddHabitModal`) inserts a habit. Streak is calculated from `completedDates`, not stored.
 
 **Habit data shape:**
 ```js
@@ -144,25 +158,37 @@ Static layout done — habit cards render from `MOCK_HABITS` with color bar, nam
   completedDates: string[], // 'YYYY-MM-DD' strings, e.g. '2026-06-19'
 }
 ```
-Streak is calculated from `completedDates`, not stored.
+
+### Goals (done)
+
+Wired to Supabase (`goals` + `goal_tasks`, loaded via `select('*, goal_tasks(*)')`). Each goal card has a color bar, title, optional description, a live progress bar + percentage (done/total sub-tasks), and a delete button. Sub-tasks render with a custom checkbox (toggles `goal_tasks.done`), per-task delete, and an inline "add sub-task" form. `AddGoalModal` (title, description, color) creates goals. Uses `dbToGoal` / `goalToDb`.
+
+### Fitness (done)
+
+Wired to Supabase (`meals` + `fitness_targets`). Loads today's meals (`logged_on = today`) and the first targets row (creates one on first save if none exists). Targets card shows calorie + protein progress bars (today's totals vs target) plus a carbs/fat summary; `EditTargetsModal` edits the targets. Meal log lists each meal with macros + calories and a delete button. `AddMealModal` logs a meal (name, calories, protein/carbs/fat). Uses `dbToMeal` / `mealToDb`.
+
+### Bucket List (done)
+
+Wired to Supabase (`bucket_lists` + `bucket_items`, loaded via `select('*, bucket_items(*)')`). Each list card has a color bar, name, done/total count, a progress bar, per-item checkboxes (toggle `bucket_items.done`), inline "add item" form, and delete buttons for both items and the whole list. `AddListModal` (name, color) creates lists. Uses `dbToList` / `listToDb`.
+
+### Skill Tree (done)
+
+Wired to Supabase (`skills`). Renders a pure-CSS org-chart tree from `parent_id` (recursive `renderNode`, ul/li connectors in `SkillTree.css`). Nodes show a lock/check badge, name, and category (category drives the accent color). Clicking an available locked node unlocks it; clicking an unlocked node re-locks it and cascade-locks descendants. A node is "blocked" (dimmed, not clickable) until its parent is unlocked. Per-node delete (children fall back to roots via `ON DELETE SET NULL`). `AddSkillModal` (name, category with datalist, parent select) adds skills. Uses `dbToSkill` / `skillToDb`.
 
 ---
 
 ## What's Next (planned order)
 
-1. **Habits page** — checkbox toggle, streak calculation, Add Habit modal, delete habit (static layout already done)
-2. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
-3. **Goals page** — create goals with sub-tasks, progress bars, link to habits/timetable
-4. **Fitness page** — log meals/calories, daily targets, nutrition breakdown
-5. **Bucket List** — multiple named lists, items, progress bars per list and item
-6. **Skill Tree** — visual node tree, unlock on completion, categories
-7. **AI Assistant** — Claude/OpenAI API with tool use:
+1. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
+2. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
+3. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
+4. **Home dashboard** — replace hardcoded stats/schedule/goals with real Supabase data now that the pages exist
+5. **AI Assistant** — Claude/OpenAI API with tool use:
    - `get_schedule()`, `add_event()`, `get_habits()`, `get_goals()`, `suggest_time_slot()`
    - **Event prediction** — AI predicts likely upcoming events from patterns
    - **Recurring event generation** — user describes a routine (e.g. "PPL gym split, Mon/Wed/Fri/Sat") and AI bulk-creates events with titles + descriptions auto-filled
    - Daily check-ins, learns preferences over time
-8. **Auth** — Supabase auth added last once core features stable
-9. **Supabase integration** — replace all mock/local state with real DB throughout
+6. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
 
 ---
 

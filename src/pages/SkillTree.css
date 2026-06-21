@@ -1,0 +1,231 @@
+/* ─── Skill Tree Page ─────────────────────────────────── */
+
+.skilltree-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.skilltree-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 680px;
+}
+
+.skilltree-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.skilltree-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.add-skill-btn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.add-skill-btn:hover {
+  background: #0284c7;
+}
+
+/* Canvas (scrolls horizontally for wide trees) */
+.skilltree-canvas {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  overflow-x: auto;
+}
+
+.skilltree-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ─── Tree connectors (pure CSS org-chart) ─────────────── */
+.skill-tree,
+.skill-tree ul {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  list-style: none;
+  padding-top: 24px;
+  margin: 0;
+}
+
+/* Root row has no parent above it */
+.skill-tree {
+  padding-top: 0;
+}
+
+.skill-tree li {
+  list-style: none;
+  position: relative;
+  padding: 24px 14px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Horizontal connectors between siblings */
+.skill-tree li::before,
+.skill-tree li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.skill-tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid var(--border);
+}
+
+/* Single child only needs the vertical line from the parent */
+.skill-tree li:only-child::after,
+.skill-tree li:only-child::before {
+  display: none;
+}
+
+/* Trim the outer corners of the first/last siblings */
+.skill-tree li:first-child::before,
+.skill-tree li:last-child::after {
+  border: 0 none;
+}
+
+.skill-tree li:last-child::before {
+  border-right: 1px solid var(--border);
+}
+
+/* Vertical line dropping from a parent into its child group */
+.skill-tree ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1px solid var(--border);
+  width: 0;
+  height: 24px;
+}
+
+/* Root-level nodes: suppress connectors (no shared parent) */
+.skill-tree > li::before,
+.skill-tree > li::after {
+  display: none;
+}
+
+.skill-tree > li {
+  padding-top: 0;
+}
+
+/* ─── Node card ────────────────────────────────────────── */
+.skill-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 130px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, transform 0.1s, opacity 0.15s;
+}
+
+.skill-node:hover {
+  transform: translateY(-2px);
+}
+
+.skill-node.locked {
+  opacity: 0.7;
+}
+
+.skill-node.blocked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.skill-node.blocked:hover {
+  transform: none;
+}
+
+.skill-node-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.skill-node-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.skill-node-category {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.skill-node-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.skill-node:hover .skill-node-delete {
+  opacity: 1;
+}
+
+.skill-node-delete:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+@media (max-width: 600px) {
+  .skilltree-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
