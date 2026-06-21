@@ -1,0 +1,230 @@
+/* ─── Fitness Page ────────────────────────────────────── */
+
+.fitness-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 680px;
+}
+
+/* Header */
+.fitness-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fitness-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.fitness-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.add-meal-btn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.add-meal-btn:hover {
+  background: #0284c7;
+}
+
+.fitness-section-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Targets card */
+.fitness-targets-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.fitness-targets-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.targets-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.targets-edit-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.target-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.target-stat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.85rem;
+}
+
+.target-stat-name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.target-stat-val {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.target-stat-goal {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.fitness-progress-bar {
+  background: var(--surface2);
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.fitness-progress-fill {
+  height: 6px;
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+.macro-summary {
+  display: flex;
+  gap: 18px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.macro-summary strong {
+  color: var(--text);
+}
+
+/* Meals */
+.meals-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meals-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.meal-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.meal-card:hover {
+  border-color: #3a3a3a;
+}
+
+.meal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.meal-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.meal-macros {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.meal-calories {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.meal-calories span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.meal-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.meal-delete-btn:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+@media (max-width: 600px) {
+  .fitness-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

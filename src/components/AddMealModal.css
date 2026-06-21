@@ -1,0 +1,15 @@
+/* Reuses .modal-overlay, .modal, .modal-actions, .cancel-btn, .submit-btn
+   from AddEventModal.css. AddMealModal-specific layout below. */
+
+.macro-row {
+  display: flex;
+  gap: 12px;
+}
+
+.macro-row label {
+  flex: 1;
+}
+
+.macro-row input[type="number"] {
+  width: 100%;
+}
