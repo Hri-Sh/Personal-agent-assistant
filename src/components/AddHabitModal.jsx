@@ -23,7 +23,7 @@ export default function AddHabitModal({ onAdd, onClose }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) return
-    onAdd({ ...form, id: Date.now(), completedDates: [] })
+    onAdd({ ...form })
     onClose()
   }
 

@@ -1,19 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './Habits.css'
 import AddHabitModal from '../components/AddHabitModal'
+import { supabase } from '../lib/supabase'
 
-const MOCK_HABITS = [
-  { id: 1, name: 'Morning Run',   frequency: 'daily',    color: '#4ade80', completedDates: [] },
-  { id: 2, name: 'Read 20 mins',  frequency: 'daily',    color: '#60a5fa', completedDates: [] },
-  { id: 3, name: 'Gym',           frequency: 'weekdays', color: '#f87171', completedDates: [] },
-  { id: 4, name: 'Weekly Review', frequency: 'weekly',   color: '#a78bfa', completedDates: [] },
-  { id: 5, name: 'Meal Prep',     frequency: 'weekly',   color: '#fb923c', completedDates: [] },
-]
+function dbToHabit(row) {
+  return {
+    id:             row.id,
+    name:           row.name,
+    frequency:      row.frequency,
+    color:          row.color,
+    completedDates: (row.habit_completions ?? []).map(c => c.completed_on),
+  }
+}
 
 export default function Habits() {
   const today = new Date().toLocaleDateString('en-CA') // 'YYYY-MM-DD'
-  const [habits, setHabits] = useState(MOCK_HABITS)
+  const [habits, setHabits] = useState([])
   const [showModal, setShowModal] = useState(false)
+
+  // Load habits + their completions on mount
+  useEffect(() => {
+    supabase
+      .from('habits')
+      .select('*, habit_completions(completed_on)')
+      .then(({ data, error }) => {
+        if (error) { console.error('Error loading habits:', error); return }
+        setHabits(data.map(dbToHabit))
+      })
+  }, [])
 
   function calcStreak(completedDates) {
     let streak = 0
@@ -30,17 +44,44 @@ export default function Habits() {
     return streak
   }
 
-  function toggleToday(id) {
-    setHabits(prev => prev.map(habit => {
-      if (habit.id !== id) return habit
-      const already = habit.completedDates.includes(today)
+  async function toggleToday(id) {
+    const habit = habits.find(h => h.id === id)
+    const already = habit.completedDates.includes(today)
+
+    if (already) {
+      const { error } = await supabase
+        .from('habit_completions')
+        .delete()
+        .eq('habit_id', id)
+        .eq('completed_on', today)
+      if (error) { console.error('Error removing completion:', error); return }
+    } else {
+      const { error } = await supabase
+        .from('habit_completions')
+        .insert({ habit_id: id, completed_on: today })
+      if (error) { console.error('Error adding completion:', error); return }
+    }
+
+    // Update local state to reflect the toggle
+    setHabits(prev => prev.map(h => {
+      if (h.id !== id) return h
       return {
-        ...habit,
+        ...h,
         completedDates: already
-          ? habit.completedDates.filter(d => d !== today)
-          : [...habit.completedDates, today]
+          ? h.completedDates.filter(d => d !== today)
+          : [...h.completedDates, today],
       }
     }))
+  }
+
+  async function handleAdd(formData) {
+    const { data, error } = await supabase
+      .from('habits')
+      .insert({ name: formData.name, frequency: formData.frequency, color: formData.color })
+      .select('*, habit_completions(completed_on)')
+      .single()
+    if (error) { console.error('Error adding habit:', error); return }
+    setHabits(prev => [...prev, dbToHabit(data)])
   }
 
   return (
@@ -73,9 +114,10 @@ export default function Habits() {
           </div>
         ))}
       </div>
+
       {showModal && (
         <AddHabitModal
-          onAdd={habit => setHabits(prev => [...prev, habit])}
+          onAdd={handleAdd}
           onClose={() => setShowModal(false)}
         />
       )}
