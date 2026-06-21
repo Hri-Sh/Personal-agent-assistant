@@ -1,0 +1,245 @@
+/* ─── Bucket List Page ────────────────────────────────── */
+
+.bucket-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 680px;
+}
+
+/* Header */
+.bucket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bucket-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.bucket-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.add-list-btn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.add-list-btn:hover {
+  background: #0284c7;
+}
+
+/* Lists */
+.bucket-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bucket-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.bucket-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.bucket-card:hover {
+  border-color: #3a3a3a;
+}
+
+.bucket-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bucket-color-dot {
+  width: 3px;
+  height: 28px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.bucket-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.bucket-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bucket-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.bucket-delete-btn:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Progress bar */
+.bucket-progress-bar {
+  background: var(--surface2);
+  border-radius: 99px;
+  height: 5px;
+  overflow: hidden;
+}
+
+.bucket-progress-fill {
+  height: 5px;
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+/* Items */
+.bucket-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bucket-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.bucket-item-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #000;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.bucket-item-check:hover:not(.checked) {
+  border-color: var(--accent);
+}
+
+.bucket-item-title {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+  min-width: 0;
+}
+
+.bucket-item.done .bucket-item-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.bucket-item-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.bucket-item:hover .bucket-item-delete {
+  opacity: 1;
+}
+
+.bucket-item-delete:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Add item inline form */
+.bucket-add-item {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.bucket-add-item input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 0.85rem;
+}
+
+.bucket-add-item input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}
+
+.bucket-add-item-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 34px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.bucket-add-item-btn:hover {
+  border-color: #0ea5e9;
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .bucket-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
