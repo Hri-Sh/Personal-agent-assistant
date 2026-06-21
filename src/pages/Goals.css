@@ -1,0 +1,258 @@
+/* ─── Goals Page ──────────────────────────────────────── */
+
+.goals-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 680px;
+}
+
+/* Header */
+.goals-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goals-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.goals-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.add-goal-btn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.add-goal-btn:hover {
+  background: #0284c7;
+}
+
+/* Goal list */
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goals-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Goal card */
+.goal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.goal-card:hover {
+  border-color: #3a3a3a;
+}
+
+.goal-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.goal-color-dot {
+  width: 3px;
+  height: 36px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.goal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.goal-description {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.goal-pct {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.goal-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.goal-delete-btn:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Progress bar */
+.goal-progress-bar {
+  background: var(--surface2);
+  border-radius: 99px;
+  height: 5px;
+  overflow: hidden;
+}
+
+.goal-progress-fill {
+  height: 5px;
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+/* Sub-tasks */
+.goal-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.goal-task-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #000;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.goal-task-check:hover:not(.checked) {
+  border-color: var(--accent);
+}
+
+.goal-task-title {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+  min-width: 0;
+}
+
+.goal-task.done .goal-task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.goal-task-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.goal-task:hover .goal-task-delete {
+  opacity: 1;
+}
+
+.goal-task-delete:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Add sub-task inline form */
+.goal-add-task {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.goal-add-task input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 0.85rem;
+}
+
+.goal-add-task input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}
+
+.goal-add-task-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 34px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.goal-add-task-btn:hover {
+  border-color: #0ea5e9;
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .goals-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

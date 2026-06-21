@@ -1,0 +1,3 @@
+/* Reuses .modal-overlay, .modal, .modal-actions, .color-picker, .color-dot,
+   .cancel-btn, .submit-btn, .modal textarea from AddEventModal.css —
+   no duplicates needed here. Add any AddGoalModal-specific overrides below. */
