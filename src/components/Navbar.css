@@ -81,6 +81,47 @@
   color: #64748b;
 }
 
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.user-level {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #052e16;
+  background: var(--accent);
+  border-radius: 99px;
+  padding: 1px 8px;
+  flex-shrink: 0;
+}
+
+.xp-bar {
+  margin: 5px 0 3px;
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 5px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+}
+
+.xp-text {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 100%;
