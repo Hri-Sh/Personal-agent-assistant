@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Lock, Check, X } from 'lucide-react'
 import './SkillTree.css'
 import AddSkillModal from '../components/AddSkillModal'
 import { supabase } from '../lib/supabase'
+import { fireConfetti } from '../lib/confetti'
 
 // DB columns are snake_case; frontend uses camelCase
 function dbToSkill(row) {
@@ -39,6 +40,11 @@ function categoryColor(category) {
 export default function SkillTree() {
   const [skills, setSkills] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [paths, setPaths] = useState([])
+  const [justUnlocked, setJustUnlocked] = useState(null)
+
+  const innerRef = useRef(null)
+  const nodeRefs = useRef(new Map())
 
   // Load all skills on mount
   useEffect(() => {
@@ -78,6 +84,45 @@ export default function SkillTree() {
     return parent ? parent.unlocked : true
   }
 
+  // Draw curved branches between parent/child node centers
+  const computePaths = useCallback(() => {
+    const inner = innerRef.current
+    if (!inner) return
+    const iRect = inner.getBoundingClientRect()
+    const next = []
+    for (const s of skills) {
+      if (!s.parentId) continue
+      const childEl = nodeRefs.current.get(s.id)
+      const parentEl = nodeRefs.current.get(s.parentId)
+      if (!childEl || !parentEl) continue
+      const pr = parentEl.getBoundingClientRect()
+      const cr = childEl.getBoundingClientRect()
+      const x1 = pr.left + pr.width / 2 - iRect.left
+      const y1 = pr.bottom - iRect.top
+      const x2 = cr.left + cr.width / 2 - iRect.left
+      const y2 = cr.top - iRect.top
+      const my = (y1 + y2) / 2
+      const parent = skills.find(p => p.id === s.parentId)
+      next.push({
+        id: s.id,
+        d: `M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`,
+        active: parent ? parent.unlocked : false,
+        color: categoryColor(s.category),
+      })
+    }
+    setPaths(next)
+  }, [skills])
+
+  useLayoutEffect(() => {
+    computePaths()
+    const raf = requestAnimationFrame(computePaths) // catch late layout/fonts
+    window.addEventListener('resize', computePaths)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', computePaths)
+    }
+  }, [computePaths])
+
   async function handleAdd(form) {
     const { data, error } = await supabase
       .from('skills')
@@ -106,6 +151,11 @@ export default function SkillTree() {
         .eq('id', skill.id)
       if (error) { console.error('Error unlocking skill:', error); return }
       setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, unlocked: true } : s))
+      // Celebrate
+      const el = nodeRefs.current.get(skill.id)
+      fireConfetti({ origin: el, count: 40, power: 9, spread: 1.3, colors: [categoryColor(skill.category), '#fde047', '#f5f5f5'] })
+      setJustUnlocked(skill.id)
+      setTimeout(() => setJustUnlocked(curr => (curr === skill.id ? null : curr)), 700)
     }
   }
 
@@ -127,8 +177,12 @@ export default function SkillTree() {
     return (
       <li key={skill.id}>
         <div
-          className={`skill-node ${skill.unlocked ? 'unlocked' : 'locked'} ${blocked ? 'blocked' : ''}`}
-          style={skill.unlocked ? { borderColor: color } : null}
+          ref={el => {
+            if (el) nodeRefs.current.set(skill.id, el)
+            else nodeRefs.current.delete(skill.id)
+          }}
+          className={`skill-node ${skill.unlocked ? 'unlocked' : 'locked'} ${blocked ? 'blocked' : ''} ${justUnlocked === skill.id ? 'unlocking' : ''}`}
+          style={skill.unlocked ? { '--node-color': color, borderColor: color } : null}
           onClick={() => handleToggle(skill)}
           title={
             skill.unlocked ? 'Click to lock'
@@ -162,25 +216,37 @@ export default function SkillTree() {
     )
   }
 
+  const unlockedCount = skills.filter(s => s.unlocked).length
+
   return (
-    <div className="skilltree-page">
+    <div className="skilltree-page page-enter">
       <div className="skilltree-header">
         <div>
           <h2>Skill Tree</h2>
-          <span className="skilltree-date">
-            {skills.filter(s => s.unlocked).length} / {skills.length} unlocked
-          </span>
+          <span className="skilltree-date">{unlockedCount} / {skills.length} unlocked</span>
         </div>
-        <button className="add-skill-btn" onClick={() => setShowModal(true)}>+ Add Skill</button>
+        <button className="add-skill-btn press" onClick={() => setShowModal(true)}>+ Add Skill</button>
       </div>
 
       <div className="skilltree-canvas">
         {roots.length === 0 ? (
           <p className="skilltree-empty">No skills yet. Add a root skill to start your tree.</p>
         ) : (
-          <ul className="skill-tree">
-            {roots.map(renderNode)}
-          </ul>
+          <div className="skilltree-inner" ref={innerRef}>
+            <svg className="skilltree-branches" xmlns="http://www.w3.org/2000/svg">
+              {paths.map(p => (
+                <path
+                  key={p.id}
+                  d={p.d}
+                  className={`branch ${p.active ? 'active' : ''}`}
+                  style={p.active ? { '--branch-color': p.color } : null}
+                />
+              ))}
+            </svg>
+            <ul className="skill-tree">
+              {roots.map(renderNode)}
+            </ul>
+          </div>
         )}
       </div>
 
