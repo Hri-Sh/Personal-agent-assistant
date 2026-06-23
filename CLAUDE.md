@@ -23,6 +23,7 @@ When Hridayesh says "time to commit", "let's commit", or anything similar, updat
 - **Vanilla CSS** with CSS custom properties (no Tailwind, no CSS-in-JS)
 - **Supabase** — integrated for DB (`src/lib/supabase.js`, credentials in `.env`). Auth still planned.
 - **Claude/OpenAI API** — planned for AI assistant (not yet integrated)
+- **Animations** — pure CSS keyframes in `src/styles/animations.css` (imported in `main.jsx`) + a tiny dependency-free canvas confetti engine in `src/lib/confetti.js`. No animation libraries. Honors `prefers-reduced-motion`.
 
 ---
 
@@ -52,11 +53,20 @@ src/
   main.jsx            # React entry point
   App.jsx             # Router setup + layout shell
   App.css             # .app-layout (flex row), .main-content (flex 1, padding 24px)
+  styles/
+    animations.css    # Shared keyframes + utility classes (page-enter, stagger-item, press, fill-animated, etc.)
   lib/
     supabase.js       # createClient from VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+    confetti.js       # Dependency-free canvas confetti — fireConfetti({ origin, count, ... })
+    muscles.js        # MUSCLE_GROUPS, muscleLabel(), WORKOUT_PRESETS (shared by Fitness + BodyMap)
   components/
-    Navbar.jsx        # Sidebar nav with Lucide icons + React Router Links
+    Navbar.jsx        # Sidebar nav + XP/level bar (aggregates XP from Supabase counts)
     Navbar.css
+    CountUp.jsx       # Animated count-up number (used on Home)
+    BodyMap.jsx       # Front/back muscle map SVG; highlights muscles by training intensity
+    BodyMap.css
+    AddWorkoutModal.jsx # Modal for logging a workout (name + muscle-group chips + presets)
+    AddWorkoutModal.css
     AddEventModal.jsx # Modal form for creating new events
     AddEventModal.css
     EventModal.jsx    # Modal for viewing + editing existing events (view/edit mode toggle)
@@ -83,6 +93,7 @@ src/
     BucketList.jsx    # DONE (see below)
     SkillTree.jsx     # DONE (see below)
     Fitness.jsx       # DONE (see below)
+    Insights.jsx      # DONE (see below)
     Assistant.jsx     # Stub
 ```
 
@@ -99,6 +110,7 @@ src/
 | `/bucketlist` | BucketList |
 | `/skilltree` | SkillTree |
 | `/fitness` | Fitness |
+| `/insights` | Insights |
 | `/assistant` | Assistant |
 
 ---
@@ -108,8 +120,8 @@ src/
 ### Navbar (done)
 Sidebar, 260px wide. Maps `navItems` array to `<Link>` elements. Uses `useLocation()` to apply `.active` class. Responsive: collapses to top bar on mobile (`max-width: 900px`). Bottom has user avatar chip.
 
-### Home (done — static)
-Header row, stats row (Today's Events / Habits / Streak), bottom row with Today's Schedule timeline + Goals progress bars + AI Tip card. All data is hardcoded. Will be wired to real data once other pages are built.
+### Home (done — live)
+Wired to Supabase. Time-based greeting, three stat cards (today's real events count, an animated SVG habit-completion ring showing done/total, best current streak across habits via `CountUp`), and a bottom row with today's real schedule (events filtered to today's weekday, colored bars) + live goal progress bars. Stat cards link to their pages. Fully animated (page-enter, stagger, ring fill, count-up).
 
 ### Timetable (done)
 
@@ -165,7 +177,11 @@ Wired to Supabase (`goals` + `goal_tasks`, loaded via `select('*, goal_tasks(*)'
 
 ### Fitness (done)
 
-Wired to Supabase (`meals` + `fitness_targets`). Loads today's meals (`logged_on = today`) and the first targets row (creates one on first save if none exists). Targets card shows calorie + protein progress bars (today's totals vs target) plus a carbs/fat summary; `EditTargetsModal` edits the targets. Meal log lists each meal with macros + calories and a delete button. `AddMealModal` logs a meal (name, calories, protein/carbs/fat). Uses `dbToMeal` / `mealToDb`.
+Wired to Supabase (`meals` + `fitness_targets` + `workouts`).
+
+**Nutrition:** loads today's meals (`logged_on = today`) and the first targets row (creates one on first save if none exists). Targets card shows calorie + protein progress bars (today's totals vs target) plus a carbs/fat summary; `EditTargetsModal` edits the targets. Meal log lists each meal with macros + calories and a delete button. `AddMealModal` logs a meal. Uses `dbToMeal` / `mealToDb`.
+
+**Training / muscle map:** loads the last 7 days of `workouts` and computes a per-muscle training-intensity map. The `BodyMap` component renders stylized front/back figures (rounded-rect muscle regions) that light up brighter the more a muscle was hit. `AddWorkoutModal` logs a workout (name + muscle-group chips, with Push/Pull/Legs/etc. presets); a workout log lists each with its muscle tags and a delete button. Muscle groups are defined once in `src/lib/muscles.js`. Logging a workout fires confetti.
 
 ### Bucket List (done)
 
@@ -173,7 +189,19 @@ Wired to Supabase (`bucket_lists` + `bucket_items`, loaded via `select('*, bucke
 
 ### Skill Tree (done)
 
-Wired to Supabase (`skills`). Renders a pure-CSS org-chart tree from `parent_id` (recursive `renderNode`, ul/li connectors in `SkillTree.css`). Nodes show a lock/check badge, name, and category (category drives the accent color). Clicking an available locked node unlocks it; clicking an unlocked node re-locks it and cascade-locks descendants. A node is "blocked" (dimmed, not clickable) until its parent is unlocked. Per-node delete (children fall back to roots via `ON DELETE SET NULL`). `AddSkillModal` (name, category with datalist, parent select) adds skills. Uses `dbToSkill` / `skillToDb`.
+Wired to Supabase (`skills`). Recursive `renderNode` lays nodes out with flex (ul/li for positioning only). Connectors are drawn as **glowing SVG bezier branches** in an overlay `<svg>`: node positions are measured via refs + `useLayoutEffect` (recomputed on resize), and each parent→child path is built as a cubic curve. Branches whose parent is unlocked turn category-colored, glow, and animate a draw-in (`stroke-dashoffset`). Nodes show a lock/check badge, name, category (drives accent color), and glow when unlocked. Clicking an available locked node unlocks it (confetti + pulse); clicking an unlocked node re-locks it and cascade-locks descendants. "Blocked" nodes are dimmed until their parent unlocks. Per-node delete (children fall back to roots via `ON DELETE SET NULL`). `AddSkillModal` (name, category datalist, parent select). Uses `dbToSkill` / `skillToDb`.
+
+### Insights (done)
+
+New analytics page wired to Supabase. Three pure-SVG/CSS visualizations (no chart library): a GitHub-style **habit heatmap** (last ~90 days of `habit_completions`, 5 intensity levels), a **calorie bar chart** (last 14 days of `meals`, animated grow-in with avg), a **protein sparkline** (SVG area+line), and a **goal-completion donut** (overall `goal_tasks` done/total). Everything animates on entrance.
+
+### Animations & celebrations (done)
+
+`src/styles/animations.css` defines shared keyframes + utility classes used everywhere: `page-enter`, `stagger-item` (with `--i` index for delay), `press`, `fill-animated`, `pop-in`, `check-pop`, `glow-pulse`, `draw-line`. Modals pop in. `src/lib/confetti.js` is a self-contained canvas confetti — `fireConfetti({ origin, count, colors, ... })` — fired on habit completion (full-clear = big burst), goal/bucket-list completion, skill unlock, and workout logging. All respects `prefers-reduced-motion`.
+
+### XP & levels (done)
+
+`Navbar` aggregates XP from Supabase counts (habit completions ×10, done goal-tasks ×15, unlocked skills ×50, workouts ×20), computes a level (`level = floor(sqrt(xp/100)) + 1`), and shows an animated XP bar + level badge in the user chip. Re-fetches on route change. Self-contained (no global state).
 
 ---
 
@@ -182,13 +210,12 @@ Wired to Supabase (`skills`). Renders a pure-CSS org-chart tree from `parent_id`
 1. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
 2. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
 3. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
-4. **Home dashboard** — replace hardcoded stats/schedule/goals with real Supabase data now that the pages exist
-5. **AI Assistant** — Claude/OpenAI API with tool use:
+4. **AI Assistant** — Claude/OpenAI API with tool use:
    - `get_schedule()`, `add_event()`, `get_habits()`, `get_goals()`, `suggest_time_slot()`
    - **Event prediction** — AI predicts likely upcoming events from patterns
    - **Recurring event generation** — user describes a routine (e.g. "PPL gym split, Mon/Wed/Fri/Sat") and AI bulk-creates events with titles + descriptions auto-filled
    - Daily check-ins, learns preferences over time
-6. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
+5. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
 
 ---
 
