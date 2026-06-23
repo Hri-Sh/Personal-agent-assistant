@@ -4,7 +4,7 @@ A personal life OS in one dark, minimalist web app: your timetable, habits, goal
 
 Built with React + Vite and Supabase. No UI framework, no animation library — the visuals (confetti, the muscle map, the skill tree, every chart) are hand-rolled.
 
-> **Status:** active personal project / learning build. Core features are done; an AI assistant and auth are planned.
+> **Status:** active personal project  Core features are done; an AI assistant and auth are planned.
 
 ---
 
