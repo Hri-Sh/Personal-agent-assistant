@@ -125,4 +125,4 @@ npm run lint      # run ESLint
 
 ---
 
-Built by [Hridayesh](https://github.com/Hri-Sh) while learning React.
+Built by [Hridayesh](https://github.com/Hri-Sh) 
