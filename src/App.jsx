@@ -9,6 +9,7 @@ import Goals from './pages/Goals'
 import BucketList from './pages/BucketList'
 import SkillTree from './pages/SkillTree'
 import Fitness from './pages/Fitness'
+import Insights from './pages/Insights'
 import Assistant from './pages/Assistant'
 
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/bucketlist" element={<BucketList />} />
             <Route path="/skilltree" element={<SkillTree />} />
             <Route path="/fitness" element={<Fitness />} />
+            <Route path="/insights" element={<Insights />} />
             <Route path="/assistant" element={<Assistant />} />
           </Routes>
         </main>
