@@ -1,0 +1,60 @@
+/* Reuses .modal-overlay, .modal, .modal-actions, .cancel-btn, .submit-btn
+   from AddEventModal.css. Workout-specific bits below. */
+
+.workout-modal {
+  width: 400px;
+  max-width: calc(100vw - 32px);
+}
+
+.workout-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.preset-chip:hover {
+  border-color: #0ea5e9;
+}
+
+.muscles-label {
+  gap: 8px;
+}
+
+.muscle-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.muscle-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.muscle-chip:hover {
+  border-color: #3a3a3a;
+  color: var(--text);
+}
+
+.muscle-chip.selected {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}

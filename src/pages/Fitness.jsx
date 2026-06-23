@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Trash2, Settings } from 'lucide-react'
+import { Trash2, Settings, Dumbbell } from 'lucide-react'
 import './Fitness.css'
 import AddMealModal from '../components/AddMealModal'
 import EditTargetsModal from '../components/EditTargetsModal'
+import AddWorkoutModal from '../components/AddWorkoutModal'
+import BodyMap from '../components/BodyMap'
 import { supabase } from '../lib/supabase'
+import { fireConfetti } from '../lib/confetti'
+import { muscleLabel } from '../lib/muscles'
 
 // DB columns are snake_case; frontend uses camelCase
 function dbToMeal(row) {
@@ -28,17 +32,35 @@ function mealToDb(meal, loggedOn) {
   }
 }
 
+function dbToWorkout(row) {
+  return {
+    id:       row.id,
+    name:     row.name,
+    muscles:  row.muscles ?? [],
+    loggedOn: row.logged_on,
+  }
+}
+
 const DEFAULT_TARGETS = { calorieTarget: 2000, proteinTarget: 150 }
+
+function daysAgoISO(n) {
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return d.toLocaleDateString('en-CA')
+}
 
 export default function Fitness() {
   const today = new Date().toLocaleDateString('en-CA') // 'YYYY-MM-DD'
+  const weekAgo = daysAgoISO(6) // last 7 days inclusive
   const [meals, setMeals] = useState([])
+  const [workouts, setWorkouts] = useState([])
   const [targets, setTargets] = useState(DEFAULT_TARGETS)
   const [targetsId, setTargetsId] = useState(null)
   const [showMealModal, setShowMealModal] = useState(false)
   const [showTargetsModal, setShowTargetsModal] = useState(false)
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false)
 
-  // Load today's meals + targets on mount
+  // Load today's meals, this week's workouts, and targets on mount
   useEffect(() => {
     supabase
       .from('meals')
@@ -47,6 +69,16 @@ export default function Fitness() {
       .then(({ data, error }) => {
         if (error) { console.error('Error loading meals:', error); return }
         setMeals(data.map(dbToMeal))
+      })
+
+    supabase
+      .from('workouts')
+      .select('*')
+      .gte('logged_on', weekAgo)
+      .order('logged_on', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { console.error('Error loading workouts:', error); return }
+        setWorkouts(data.map(dbToWorkout))
       })
 
     supabase
@@ -64,7 +96,7 @@ export default function Fitness() {
           setTargetsId(data[0].id)
         }
       })
-  }, [today])
+  }, [today, weekAgo])
 
   async function handleAddMeal(meal) {
     const { data, error } = await supabase
@@ -80,6 +112,23 @@ export default function Fitness() {
     const { error } = await supabase.from('meals').delete().eq('id', id)
     if (error) { console.error('Error deleting meal:', error); return }
     setMeals(prev => prev.filter(m => m.id !== id))
+  }
+
+  async function handleAddWorkout(workout) {
+    const { data, error } = await supabase
+      .from('workouts')
+      .insert({ name: workout.name, muscles: workout.muscles, logged_on: today })
+      .select()
+      .single()
+    if (error) { console.error('Error logging workout:', error); return }
+    setWorkouts(prev => [dbToWorkout(data), ...prev])
+    fireConfetti({ count: 60, power: 10, spread: 1.4, colors: ['#f87171', '#fb923c', '#fde047'] })
+  }
+
+  async function handleDeleteWorkout(id) {
+    const { error } = await supabase.from('workouts').delete().eq('id', id)
+    if (error) { console.error('Error deleting workout:', error); return }
+    setWorkouts(prev => prev.filter(w => w.id !== id))
   }
 
   async function handleSaveTargets(next) {
@@ -116,8 +165,20 @@ export default function Fitness() {
     ? Math.min(100, Math.round((totals.protein / targets.proteinTarget) * 100))
     : 0
 
+  // Muscle intensity over the last 7 days
+  const intensity = {}
+  for (const w of workouts) {
+    for (const m of w.muscles) intensity[m] = (intensity[m] ?? 0) + 1
+  }
+
+  function formatLogged(iso) {
+    if (iso === today) return 'Today'
+    const d = new Date(iso + 'T00:00:00')
+    return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+  }
+
   return (
-    <div className="fitness-page">
+    <div className="fitness-page page-enter">
       <div className="fitness-header">
         <div>
           <h2>Fitness</h2>
@@ -125,10 +186,48 @@ export default function Fitness() {
             {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
         </div>
-        <button className="add-meal-btn" onClick={() => setShowMealModal(true)}>+ Log Meal</button>
+        <div className="fitness-actions">
+          <button className="log-workout-btn press" onClick={() => setShowWorkoutModal(true)}>
+            <Dumbbell size={15} /> Log Workout
+          </button>
+          <button className="add-meal-btn press" onClick={() => setShowMealModal(true)}>+ Log Meal</button>
+        </div>
       </div>
 
-      {/* Daily targets */}
+      {/* Training — muscle map + workout log */}
+      <div className="training-card">
+        <span className="fitness-section-label">Muscles trained · last 7 days</span>
+        <BodyMap intensity={intensity} />
+
+        <div className="workout-log">
+          {workouts.length === 0 ? (
+            <p className="workout-empty">No workouts logged this week. Hit “Log Workout” to light up some muscles.</p>
+          ) : (
+            workouts.map((w, i) => (
+              <div key={w.id} className="workout-row stagger-item" style={{ '--i': i }}>
+                <div className="workout-info">
+                  <span className="workout-name">{w.name}</span>
+                  <div className="workout-muscles">
+                    {w.muscles.map(m => (
+                      <span key={m} className="workout-muscle-tag">{muscleLabel(m)}</span>
+                    ))}
+                  </div>
+                </div>
+                <span className="workout-date">{formatLogged(w.loggedOn)}</span>
+                <button
+                  className="workout-delete-btn"
+                  onClick={() => handleDeleteWorkout(w.id)}
+                  title="Delete workout"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Daily nutrition targets */}
       <div className="fitness-targets-card">
         <div className="fitness-targets-top">
           <span className="fitness-section-label">Today's Targets</span>
@@ -150,7 +249,7 @@ export default function Fitness() {
           </div>
           <div className="fitness-progress-bar">
             <div
-              className="fitness-progress-fill"
+              className="fitness-progress-fill fill-animated"
               style={{ width: `${caloriePct}%`, background: '#4ade80' }}
             />
           </div>
@@ -165,7 +264,7 @@ export default function Fitness() {
           </div>
           <div className="fitness-progress-bar">
             <div
-              className="fitness-progress-fill"
+              className="fitness-progress-fill fill-animated"
               style={{ width: `${proteinPct}%`, background: '#60a5fa' }}
             />
           </div>
@@ -184,8 +283,8 @@ export default function Fitness() {
           {meals.length === 0 && (
             <p className="meals-empty">No meals logged today.</p>
           )}
-          {meals.map(meal => (
-            <div key={meal.id} className="meal-card">
+          {meals.map((meal, i) => (
+            <div key={meal.id} className="meal-card stagger-item" style={{ '--i': i }}>
               <div className="meal-info">
                 <span className="meal-name">{meal.name}</span>
                 <span className="meal-macros">
@@ -215,6 +314,10 @@ export default function Fitness() {
           onSave={handleSaveTargets}
           onClose={() => setShowTargetsModal(false)}
         />
+      )}
+
+      {showWorkoutModal && (
+        <AddWorkoutModal onAdd={handleAddWorkout} onClose={() => setShowWorkoutModal(false)} />
       )}
     </div>
   )

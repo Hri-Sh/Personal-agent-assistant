@@ -74,6 +74,16 @@ CREATE TABLE fitness_targets (
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Workouts — each logs the muscle groups trained (drives the body map)
+CREATE TABLE workouts (
+  id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  muscles     TEXT[] NOT NULL DEFAULT '{}', -- e.g. {'chest','triceps'}
+  logged_on   DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ─── Bucket List ───────────────────────────────────────────
 CREATE TABLE bucket_lists (
   id         BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
