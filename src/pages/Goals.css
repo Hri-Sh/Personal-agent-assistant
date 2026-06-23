@@ -63,11 +63,13 @@
   border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .goal-card:hover {
   border-color: #3a3a3a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -14px rgba(0, 0, 0, 0.8);
 }
 
 .goal-card-top {
@@ -172,6 +174,20 @@
 
 .goal-task-check:hover:not(.checked) {
   border-color: var(--accent);
+}
+
+.goal-task-check:active {
+  transform: scale(0.85);
+}
+
+.goal-task-check.checked svg {
+  animation: check-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fully complete goal gets a celebratory ring */
+.goal-card.is-complete {
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.15), 0 6px 24px -12px rgba(74, 222, 128, 0.4);
 }
 
 .goal-task-title {

@@ -3,6 +3,7 @@ import { Trash2, Plus, Check } from 'lucide-react'
 import './BucketList.css'
 import AddListModal from '../components/AddListModal'
 import { supabase } from '../lib/supabase'
+import { fireConfetti } from '../lib/confetti'
 
 // DB columns are snake_case; bucket_items come nested from the join
 function dbToList(row) {
@@ -79,11 +80,16 @@ export default function BucketList() {
       .update({ done: !item.done })
       .eq('id', item.id)
     if (error) { console.error('Error toggling item:', error); return }
-    setLists(prev => prev.map(l =>
-      l.id === listId
-        ? { ...l, items: l.items.map(i => i.id === item.id ? { ...i, done: !i.done } : i) }
-        : l
-    ))
+
+    // Compute completion from current state synchronously (state updates are async)
+    const list = lists.find(l => l.id === listId)
+    const newItems = list.items.map(i => i.id === item.id ? { ...i, done: !i.done } : i)
+    const wasComplete = list.items.length > 0 && list.items.every(i => i.done)
+    const nowComplete = newItems.length > 0 && newItems.every(i => i.done)
+
+    setLists(prev => prev.map(l => l.id === listId ? { ...l, items: newItems } : l))
+
+    if (!wasComplete && nowComplete) fireConfetti({ count: 110, power: 12, spread: 1.7 })
   }
 
   async function handleDeleteItem(listId, itemId) {
@@ -95,7 +101,7 @@ export default function BucketList() {
   }
 
   return (
-    <div className="bucket-page">
+    <div className="bucket-page page-enter">
       <div className="bucket-header">
         <div>
           <h2>Bucket List</h2>
@@ -111,13 +117,17 @@ export default function BucketList() {
           <p className="bucket-empty">No lists yet. Create one to get started.</p>
         )}
 
-        {lists.map(list => {
+        {lists.map((list, li) => {
           const total = list.items.length
           const done = list.items.filter(i => i.done).length
           const pct = total === 0 ? 0 : Math.round((done / total) * 100)
 
           return (
-            <div key={list.id} className="bucket-card">
+            <div
+              key={list.id}
+              className={`bucket-card stagger-item ${pct === 100 ? 'is-complete' : ''}`}
+              style={{ '--i': li }}
+            >
               <div className="bucket-card-top">
                 <div className="bucket-color-dot" style={{ background: list.color }} />
                 <span className="bucket-name">{list.name}</span>
@@ -133,7 +143,7 @@ export default function BucketList() {
 
               <div className="bucket-progress-bar">
                 <div
-                  className="bucket-progress-fill"
+                  className="bucket-progress-fill fill-animated"
                   style={{ width: `${pct}%`, background: list.color }}
                 />
               </div>

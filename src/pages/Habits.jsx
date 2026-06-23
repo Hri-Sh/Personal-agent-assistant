@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './Habits.css'
 import AddHabitModal from '../components/AddHabitModal'
 import { supabase } from '../lib/supabase'
+import { fireConfetti } from '../lib/confetti'
 
 function dbToHabit(row) {
   return {
@@ -44,7 +45,7 @@ export default function Habits() {
     return streak
   }
 
-  async function toggleToday(id) {
+  async function toggleToday(id, el) {
     const habit = habits.find(h => h.id === id)
     const already = habit.completedDates.includes(today)
 
@@ -63,7 +64,7 @@ export default function Habits() {
     }
 
     // Update local state to reflect the toggle
-    setHabits(prev => prev.map(h => {
+    const next = habits.map(h => {
       if (h.id !== id) return h
       return {
         ...h,
@@ -71,7 +72,18 @@ export default function Habits() {
           ? h.completedDates.filter(d => d !== today)
           : [...h.completedDates, today],
       }
-    }))
+    })
+    setHabits(next)
+
+    // Celebrate completions
+    if (!already) {
+      const allDone = next.length > 0 && next.every(h => h.completedDates.includes(today))
+      if (allDone) {
+        fireConfetti({ count: 140, power: 13, spread: 1.8 }) // full clear!
+      } else if (el) {
+        fireConfetti({ origin: el, count: 26, power: 7, spread: 1 })
+      }
+    }
   }
 
   async function handleAdd(formData) {
@@ -85,7 +97,7 @@ export default function Habits() {
   }
 
   return (
-    <div className="habits-page">
+    <div className="habits-page page-enter">
       <div className="habits-header">
         <div>
           <h2>Habits</h2>
@@ -97,22 +109,29 @@ export default function Habits() {
       </div>
 
       <div className="habits-list">
-        {habits.map(habit => (
-          <div key={habit.id} className="habit-card">
-            <div className="habit-color-dot" style={{ background: habit.color }} />
-            <div className="habit-info">
-              <span className="habit-name">{habit.name}</span>
-              <span className="habit-frequency">{habit.frequency}</span>
+        {habits.map((habit, i) => {
+          const done = habit.completedDates.includes(today)
+          return (
+            <div
+              key={habit.id}
+              className={`habit-card stagger-item ${done ? 'is-done' : ''}`}
+              style={{ '--i': i }}
+            >
+              <div className="habit-color-dot" style={{ background: habit.color }} />
+              <div className="habit-info">
+                <span className="habit-name">{habit.name}</span>
+                <span className="habit-frequency">{habit.frequency}</span>
+              </div>
+              <div className="habit-streak">🔥 {calcStreak(habit.completedDates)}</div>
+              <input
+                type="checkbox"
+                className="habit-check"
+                checked={done}
+                onChange={e => toggleToday(habit.id, e.currentTarget)}
+              />
             </div>
-            <div className="habit-streak">🔥 {calcStreak(habit.completedDates)}</div>
-            <input
-              type="checkbox"
-              className="habit-check"
-              checked={habit.completedDates.includes(today)}
-              onChange={() => toggleToday(habit.id)}
-            />
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {showModal && (

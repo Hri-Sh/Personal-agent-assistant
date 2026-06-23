@@ -3,6 +3,7 @@ import { Trash2, Plus, Check } from 'lucide-react'
 import './Goals.css'
 import AddGoalModal from '../components/AddGoalModal'
 import { supabase } from '../lib/supabase'
+import { fireConfetti } from '../lib/confetti'
 
 // DB columns are snake_case; goal_tasks come nested from the join
 function dbToGoal(row) {
@@ -81,11 +82,16 @@ export default function Goals() {
       .update({ done: !task.done })
       .eq('id', task.id)
     if (error) { console.error('Error toggling task:', error); return }
-    setGoals(prev => prev.map(g =>
-      g.id === goalId
-        ? { ...g, tasks: g.tasks.map(t => t.id === task.id ? { ...t, done: !t.done } : t) }
-        : g
-    ))
+
+    // Compute completion from current state synchronously (state updates are async)
+    const goal = goals.find(g => g.id === goalId)
+    const newTasks = goal.tasks.map(t => t.id === task.id ? { ...t, done: !t.done } : t)
+    const wasComplete = goal.tasks.length > 0 && goal.tasks.every(t => t.done)
+    const nowComplete = newTasks.length > 0 && newTasks.every(t => t.done)
+
+    setGoals(prev => prev.map(g => g.id === goalId ? { ...g, tasks: newTasks } : g))
+
+    if (!wasComplete && nowComplete) fireConfetti({ count: 110, power: 12, spread: 1.7 })
   }
 
   async function handleDeleteTask(goalId, taskId) {
@@ -97,7 +103,7 @@ export default function Goals() {
   }
 
   return (
-    <div className="goals-page">
+    <div className="goals-page page-enter">
       <div className="goals-header">
         <div>
           <h2>Goals</h2>
@@ -113,13 +119,17 @@ export default function Goals() {
           <p className="goals-empty">No goals yet. Add one to get started.</p>
         )}
 
-        {goals.map(goal => {
+        {goals.map((goal, gi) => {
           const total = goal.tasks.length
           const done = goal.tasks.filter(t => t.done).length
           const pct = total === 0 ? 0 : Math.round((done / total) * 100)
 
           return (
-            <div key={goal.id} className="goal-card">
+            <div
+              key={goal.id}
+              className={`goal-card stagger-item ${pct === 100 ? 'is-complete' : ''}`}
+              style={{ '--i': gi }}
+            >
               <div className="goal-card-top">
                 <div className="goal-color-dot" style={{ background: goal.color }} />
                 <div className="goal-info">
@@ -140,7 +150,7 @@ export default function Goals() {
 
               <div className="goal-progress-bar">
                 <div
-                  className="goal-progress-fill"
+                  className="goal-progress-fill fill-animated"
                   style={{ width: `${pct}%`, background: goal.color }}
                 />
               </div>

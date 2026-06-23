@@ -58,11 +58,13 @@
   border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .habit-card:hover {
   border-color: #3a3a3a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -14px rgba(0, 0, 0, 0.8);
 }
 
 .habit-card.completed {
@@ -123,6 +125,11 @@
 .habit-check:checked {
   background: #4ade80;
   border-color: #4ade80;
+  animation: glow-pulse 0.6s ease;
+}
+
+.habit-check:active {
+  transform: scale(0.88);
 }
 
 .habit-check:checked::after {
@@ -136,6 +143,14 @@
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
+  animation: check-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Completed habit card gets a faint green wash */
+.habit-card.is-done {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: linear-gradient(var(--surface), var(--surface)) padding-box,
+              linear-gradient(90deg, rgba(74, 222, 128, 0.06), transparent) border-box;
 }
 
 .habit-check:hover:not(:checked) {
