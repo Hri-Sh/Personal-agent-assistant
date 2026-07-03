@@ -107,6 +107,7 @@ CREATE TABLE skills (
   user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name        TEXT NOT NULL,
   category    TEXT DEFAULT 'general',
+  color       TEXT NOT NULL DEFAULT '#4ade80',
   unlocked    BOOLEAN NOT NULL DEFAULT FALSE,
   parent_id   BIGINT REFERENCES skills(id) ON DELETE SET NULL, -- for tree structure
   created_at  TIMESTAMPTZ DEFAULT NOW()

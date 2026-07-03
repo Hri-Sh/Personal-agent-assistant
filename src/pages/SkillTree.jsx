@@ -1,29 +1,12 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import { Lock, Check, X } from 'lucide-react'
+import { Lock, Unlock, Check, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
 import './SkillTree.css'
-import AddSkillModal from '../components/AddSkillModal'
+import SkillModal from '../components/SkillModal'
 import { supabase } from '../lib/supabase'
 import { fireConfetti } from '../lib/confetti'
 
-// DB columns are snake_case; frontend uses camelCase
-function dbToSkill(row) {
-  return {
-    id:       row.id,
-    name:     row.name,
-    category: row.category ?? 'general',
-    unlocked: row.unlocked,
-    parentId: row.parent_id,
-  }
-}
-
-function skillToDb(skill) {
-  return {
-    name:      skill.name,
-    category:  skill.category,
-    parent_id: skill.parentId,
-  }
-}
-
+// Legacy category→color mapping — only used as a fallback for rows
+// created before the per-skill `color` column existed.
 const CATEGORY_COLORS = {
   general:  '#4ade80',
   fitness:  '#f87171',
@@ -37,9 +20,33 @@ function categoryColor(category) {
   return CATEGORY_COLORS[(category ?? '').toLowerCase()] ?? '#4ade80'
 }
 
+// DB columns are snake_case; frontend uses camelCase
+function dbToSkill(row) {
+  return {
+    id:       row.id,
+    name:     row.name,
+    category: row.category ?? 'general',
+    color:    row.color ?? categoryColor(row.category),
+    unlocked: row.unlocked,
+    parentId: row.parent_id,
+  }
+}
+
+function skillToDb(skill) {
+  return {
+    name:      skill.name,
+    category:  skill.category,
+    color:     skill.color,
+    parent_id: skill.parentId,
+  }
+}
+
+const MENU_WIDTH = 180 // keep in sync with .skill-menu width
+
 export default function SkillTree() {
   const [skills, setSkills] = useState([])
-  const [showModal, setShowModal] = useState(false)
+  const [modal, setModal] = useState(null)   // null | { mode: 'add', parentId } | { mode: 'edit', skill }
+  const [menu, setMenu] = useState(null)     // null | { skill, x, y }
   const [paths, setPaths] = useState([])
   const [justUnlocked, setJustUnlocked] = useState(null)
 
@@ -57,6 +64,25 @@ export default function SkillTree() {
         setSkills(data.map(dbToSkill))
       })
   }, [])
+
+  // Any click, Escape, scroll, or resize dismisses the context menu
+  useEffect(() => {
+    if (!menu) return
+    const close = () => setMenu(null)
+    const onKey = e => { if (e.key === 'Escape') close() }
+    window.addEventListener('click', close)
+    window.addEventListener('contextmenu', close)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('contextmenu', close)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [menu])
 
   // Group children by parent for fast tree building
   const childrenMap = {}
@@ -107,7 +133,7 @@ export default function SkillTree() {
         id: s.id,
         d: `M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`,
         active: parent ? parent.unlocked : false,
-        color: categoryColor(s.category),
+        color: s.color,
       })
     }
     setPaths(next)
@@ -123,14 +149,32 @@ export default function SkillTree() {
     }
   }, [computePaths])
 
-  async function handleAdd(form) {
-    const { data, error } = await supabase
-      .from('skills')
-      .insert(skillToDb(form))
-      .select()
-      .single()
-    if (error) { console.error('Error adding skill:', error); return }
-    setSkills(prev => [...prev, dbToSkill(data)])
+  function openMenu(skill, x, y) {
+    setMenu({
+      skill,
+      x: Math.max(8, Math.min(x, window.innerWidth - MENU_WIDTH - 12)),
+      y: Math.max(8, Math.min(y, window.innerHeight - 200)),
+    })
+  }
+
+  async function handleSave(form) {
+    if (modal?.mode === 'edit') {
+      const id = modal.skill.id
+      const { error } = await supabase
+        .from('skills')
+        .update(skillToDb(form))
+        .eq('id', id)
+      if (error) { console.error('Error updating skill:', error); return }
+      setSkills(prev => prev.map(s => s.id === id ? { ...s, ...form } : s))
+    } else {
+      const { data, error } = await supabase
+        .from('skills')
+        .insert(skillToDb(form))
+        .select()
+        .single()
+      if (error) { console.error('Error adding skill:', error); return }
+      setSkills(prev => [...prev, dbToSkill(data)])
+    }
   }
 
   async function handleToggle(skill) {
@@ -153,7 +197,7 @@ export default function SkillTree() {
       setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, unlocked: true } : s))
       // Celebrate
       const el = nodeRefs.current.get(skill.id)
-      fireConfetti({ origin: el, count: 40, power: 9, spread: 1.3, colors: [categoryColor(skill.category), '#fde047', '#f5f5f5'] })
+      fireConfetti({ origin: el, count: 40, power: 9, spread: 1.3, colors: [skill.color, '#fde047', '#f5f5f5'] })
       setJustUnlocked(skill.id)
       setTimeout(() => setJustUnlocked(curr => (curr === skill.id ? null : curr)), 700)
     }
@@ -170,7 +214,7 @@ export default function SkillTree() {
 
   function renderNode(skill) {
     const kids = childrenMap[skill.id] ?? []
-    const color = categoryColor(skill.category)
+    const color = skill.color
     const available = isAvailable(skill)
     const blocked = !skill.unlocked && !available
 
@@ -184,6 +228,11 @@ export default function SkillTree() {
           className={`skill-node ${skill.unlocked ? 'unlocked' : 'locked'} ${blocked ? 'blocked' : ''} ${justUnlocked === skill.id ? 'unlocking' : ''}`}
           style={skill.unlocked ? { '--node-color': color, borderColor: color } : null}
           onClick={() => handleToggle(skill)}
+          onContextMenu={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            openMenu(skill, e.clientX, e.clientY)
+          }}
           title={
             skill.unlocked ? 'Click to lock'
             : available ? 'Click to unlock'
@@ -191,11 +240,15 @@ export default function SkillTree() {
           }
         >
           <button
-            className="skill-node-delete"
-            onClick={e => { e.stopPropagation(); handleDelete(skill.id) }}
-            title="Delete skill"
+            className="skill-node-kebab"
+            onClick={e => {
+              e.stopPropagation()
+              const r = e.currentTarget.getBoundingClientRect()
+              openMenu(skill, r.right - MENU_WIDTH, r.bottom + 6)
+            }}
+            title="Skill options"
           >
-            <X size={12} />
+            <MoreVertical size={14} />
           </button>
           <span
             className="skill-node-badge"
@@ -217,6 +270,7 @@ export default function SkillTree() {
   }
 
   const unlockedCount = skills.filter(s => s.unlocked).length
+  const menuBlocked = menu ? (!menu.skill.unlocked && !isAvailable(menu.skill)) : false
 
   return (
     <div className="skilltree-page page-enter">
@@ -225,7 +279,9 @@ export default function SkillTree() {
           <h2>Skill Tree</h2>
           <span className="skilltree-date">{unlockedCount} / {skills.length} unlocked</span>
         </div>
-        <button className="add-skill-btn press" onClick={() => setShowModal(true)}>+ Add Skill</button>
+        <button className="add-skill-btn press" onClick={() => setModal({ mode: 'add', parentId: null })}>
+          + Add Skill
+        </button>
       </div>
 
       <div className="skilltree-canvas">
@@ -250,11 +306,49 @@ export default function SkillTree() {
         )}
       </div>
 
-      {showModal && (
-        <AddSkillModal
+      {menu && (
+        <div
+          className="skill-menu"
+          style={{ left: menu.x, top: menu.y }}
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            className="skill-menu-item"
+            onClick={() => { setModal({ mode: 'edit', skill: menu.skill }); setMenu(null) }}
+          >
+            <Pencil size={14} /> Edit skill
+          </button>
+          <button
+            className="skill-menu-item"
+            onClick={() => { setModal({ mode: 'add', parentId: menu.skill.id }); setMenu(null) }}
+          >
+            <Plus size={14} /> Add child node
+          </button>
+          <button
+            className="skill-menu-item"
+            disabled={menuBlocked}
+            title={menuBlocked ? 'Unlock the parent skill first' : undefined}
+            onClick={() => { handleToggle(menu.skill); setMenu(null) }}
+          >
+            {menu.skill.unlocked ? <><Lock size={14} /> Lock</> : <><Unlock size={14} /> Unlock</>}
+          </button>
+          <div className="skill-menu-divider" />
+          <button
+            className="skill-menu-item danger"
+            onClick={() => { handleDelete(menu.skill.id); setMenu(null) }}
+          >
+            <Trash2 size={14} /> Delete
+          </button>
+        </div>
+      )}
+
+      {modal && (
+        <SkillModal
           skills={skills}
-          onAdd={handleAdd}
-          onClose={() => setShowModal(false)}
+          skill={modal.mode === 'edit' ? modal.skill : null}
+          defaultParentId={modal.mode === 'add' ? modal.parentId : null}
+          onSave={handleSave}
+          onClose={() => setModal(null)}
         />
       )}
     </div>

@@ -61,11 +61,12 @@ function Navbar() {
       </div>
 
       <div className="sidebar-links">
-        {navItems.map(({ to, label, icon: Icon }) => (
+        {navItems.map(({ to, label, icon: Icon }, i) => (
           <Link
             key={to}
             to={to}
-            className={`sidebar-link ${location.pathname === to ? 'active' : ''}`}
+            className={`sidebar-link stagger-item ${location.pathname === to ? 'active' : ''}`}
+            style={{ '--i': i }}
           >
             <Icon size={16} />
             <span>{label}</span>

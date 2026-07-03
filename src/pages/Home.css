@@ -18,6 +18,12 @@
 .home-header h1 {
   margin: 0 0 4px;
   font-size: 1.6rem;
+  background: linear-gradient(90deg, var(--text) 0%, var(--accent) 45%, var(--accent-2) 60%, var(--text) 85%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-pan 8s ease-in-out infinite alternate;
 }
 
 .home-sub {
@@ -53,6 +59,8 @@
 }
 
 .stat-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -67,13 +75,38 @@
   min-height: 138px;
   color: var(--text);
   box-shadow: var(--shadow-1);
-  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  transition: border-color 0.25s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
 }
 
 .stat-card:hover {
-  border-color: #3a3a3a;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.9);
+  border-color: rgba(74, 222, 128, 0.4);
+  transform: translateY(-5px) scale(1.015);
+  box-shadow: 0 14px 36px -18px rgba(0, 0, 0, 0.9), 0 0 24px -10px rgba(74, 222, 128, 0.35);
+}
+
+/* Light sweep across stat cards on hover */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.stat-card:hover::after {
+  animation: sheen-sweep 0.8s ease;
+}
+
+.stat-card .stat-value {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stat-card:hover .stat-value {
+  transform: scale(1.08);
 }
 
 .stat-label {
@@ -189,6 +222,12 @@
   border-left: 3px solid;
   font-size: 0.85rem;
   font-weight: 500;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.schedule-item:hover .schedule-bar {
+  transform: translateX(4px);
+  filter: brightness(1.12);
 }
 
 /* Goals */
@@ -216,6 +255,7 @@
 .home-progress-fill {
   height: 6px;
   border-radius: 99px;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (max-width: 768px) {

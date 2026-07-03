@@ -136,11 +136,18 @@
   border: 1px solid var(--border);
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  /* opacity-only entrance — a scaling entrance would distort the node rects
+     that computePaths() measures for the SVG branches */
+  animation: fade-in 0.4s ease backwards;
+  transition: border-color 0.2s, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
 }
 
 .skill-node:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px) scale(1.03);
+}
+
+.skill-node.unlocked:hover {
+  box-shadow: 0 0 26px -6px var(--node-color);
 }
 
 .skill-node.locked {
@@ -200,7 +207,7 @@
   letter-spacing: 0.05em;
 }
 
-.skill-node-delete {
+.skill-node-kebab {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -213,16 +220,96 @@
   display: grid;
   place-items: center;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  transform: translateX(4px);
+  transition: opacity 0.15s, transform 0.15s, background 0.15s, color 0.15s;
 }
 
-.skill-node:hover .skill-node-delete {
+.skill-node:hover .skill-node-kebab {
   opacity: 1;
+  transform: translateX(0);
 }
 
-.skill-node-delete:hover {
-  background: rgba(248, 113, 113, 0.15);
+.skill-node-kebab:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* ─── Context menu ─────────────────────────────────────── */
+.skill-menu {
+  position: fixed;
+  z-index: 200;
+  width: 180px; /* keep in sync with MENU_WIDTH in SkillTree.jsx */
+  padding: 6px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform-origin: top left;
+  animation: pop-in 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, color 0.12s, padding-left 0.12s;
+}
+
+.skill-menu-item:hover {
+  background: var(--surface-3);
+  padding-left: 13px;
+}
+
+.skill-menu-item svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+
+.skill-menu-item:hover svg {
+  color: var(--accent);
+}
+
+.skill-menu-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.skill-menu-item:disabled:hover {
+  background: none;
+  padding-left: 10px;
+}
+
+.skill-menu-item:disabled:hover svg {
+  color: var(--text-muted);
+}
+
+.skill-menu-item.danger:hover {
+  background: rgba(248, 113, 113, 0.12);
   color: #f87171;
+}
+
+.skill-menu-item.danger:hover svg {
+  color: #f87171;
+}
+
+.skill-menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
 }
 
 @media (max-width: 600px) {
