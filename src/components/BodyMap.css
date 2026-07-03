@@ -1,7 +1,7 @@
 .body-map {
   display: flex;
   justify-content: center;
-  gap: 28px;
+  gap: 32px;
   flex-wrap: wrap;
 }
 
@@ -9,34 +9,38 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .body-figure svg {
-  width: 150px;
+  width: 158px;
   height: auto;
   overflow: visible;
 }
 
 .body-figure-label {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
 }
 
-/* Structural shapes */
-.body-base {
-  fill: rgba(245, 245, 245, 0.08);
+/* Structural silhouette sitting behind the muscles */
+.body-base path,
+.body-base circle {
+  fill: rgba(245, 245, 245, 0.06);
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
 }
 
 /* Muscle regions */
 .muscle {
-  stroke: rgba(255, 255, 255, 0.06);
+  stroke: rgba(0, 0, 0, 0.35);
   stroke-width: 1;
+  stroke-linejoin: round;
   transition: fill 0.5s ease;
 }
 
 .muscle.active {
-  filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.55));
+  filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.6));
 }
