@@ -25,33 +25,34 @@
 }
 
 .add-skill-btn {
-  background: #0ea5e9;
-  color: #fff;
+  background: var(--accent-grad);
+  color: var(--accent-ink);
   border: none;
   padding: 0 16px;
-  height: 34px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: background 0.15s;
+  font-weight: 700;
+  box-shadow: var(--glow-accent);
+  transition: filter 0.15s, transform 0.1s;
   flex-shrink: 0;
 }
 
-.add-skill-btn:hover {
-  background: #0284c7;
-}
+.add-skill-btn:hover { filter: brightness(1.07); }
+.add-skill-btn:active { transform: scale(0.96); }
 
 /* Canvas (scrolls horizontally for wide trees) */
 .skilltree-canvas {
   position: relative;
   background:
-    radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.06), transparent 60%),
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.08), transparent 60%),
     var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 32px 24px;
   overflow-x: auto;
+  box-shadow: var(--shadow-1);
 }
 
 .skilltree-empty {

@@ -25,22 +25,22 @@
 }
 
 .add-meal-btn {
-  background: #0ea5e9;
-  color: #fff;
+  background: var(--accent-grad);
+  color: var(--accent-ink);
   border: none;
   padding: 0 16px;
-  height: 34px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: background 0.15s;
+  font-weight: 700;
+  box-shadow: var(--glow-accent);
+  transition: filter 0.15s, transform 0.1s;
   flex-shrink: 0;
 }
 
-.add-meal-btn:hover {
-  background: #0284c7;
-}
+.add-meal-btn:hover { filter: brightness(1.07); }
+.add-meal-btn:active { transform: scale(0.96); }
 
 .fitness-actions {
   display: flex;
@@ -52,16 +52,16 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface2);
+  background: var(--surface-3);
   color: var(--text);
   border: 1px solid var(--border);
   padding: 0 14px;
-  height: 34px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: border-color 0.15s, background 0.15s;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
 }
 
 .log-workout-btn:hover {
@@ -69,17 +69,20 @@
   color: #f87171;
 }
 
+.log-workout-btn:active { transform: scale(0.96); }
+
 /* Training card */
 .training-card {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding: 20px 18px;
-  border-radius: 12px;
+  padding: 22px 20px;
+  border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at 50% 0%, rgba(248, 113, 113, 0.06), transparent 55%),
+    radial-gradient(circle at 50% 0%, rgba(248, 113, 113, 0.08), transparent 55%),
     var(--surface);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
 }
 
 .workout-log {
@@ -174,10 +177,11 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 18px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
 }
 
 .fitness-targets-top {

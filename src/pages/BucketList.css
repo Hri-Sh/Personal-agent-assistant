@@ -25,22 +25,22 @@
 }
 
 .add-list-btn {
-  background: #0ea5e9;
-  color: #fff;
+  background: var(--accent-grad);
+  color: var(--accent-ink);
   border: none;
   padding: 0 16px;
-  height: 34px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: background 0.15s;
+  font-weight: 700;
+  box-shadow: var(--glow-accent);
+  transition: filter 0.15s, transform 0.1s;
   flex-shrink: 0;
 }
 
-.add-list-btn:hover {
-  background: #0284c7;
-}
+.add-list-btn:hover { filter: brightness(1.07); }
+.add-list-btn:active { transform: scale(0.96); }
 
 /* Lists */
 .bucket-lists {
