@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,24 +7,92 @@
 }
 
 :root {
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface2: #1c1c1c;
-  --border: #2a2a2a;
-  --text: #f5f5f5;
-  --text-muted: #525252;
-  --accent: #4ade80;
+  /* ─── Surfaces (layered for depth) ─── */
+  --bg: #08090c;
+  --surface: #121317;
+  --surface-2: #191b20;
+  --surface-3: #22252b;
+  /* legacy alias kept so older rules keep working */
+  --surface2: #191b20;
+  --border: #262a31;
+  --border-strong: #363b44;
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ─── Text ─── */
+  --text: #f4f6f9;
+  --text-muted: #8b929c;
+  --text-dim: #5b616b;
+
+  /* ─── Accents ─── */
+  --accent: #4ade80;
+  --accent-2: #22d3ee;
+  --accent-blue: #0ea5e9;
+  --accent-ink: #04140a;               /* dark text to sit on accent */
+  --accent-grad: linear-gradient(135deg, #4ade80, #22d3ee);
+  --blue-grad: linear-gradient(135deg, #38bdf8, #0ea5e9);
+
+  /* ─── Radii ─── */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+
+  /* ─── Shadows / glows ─── */
+  --shadow-1: 0 6px 24px -16px rgba(0, 0, 0, 0.9);
+  --shadow-2: 0 18px 48px -24px rgba(0, 0, 0, 0.95);
+  --glow-accent: 0 0 24px -6px rgba(74, 222, 128, 0.5);
+
+  /* ─── Type ─── */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+
+  font-family: var(--font);
   font-size: 16px;
   color: var(--text);
   background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   min-height: 100vh;
+  background:
+    radial-gradient(1100px 520px at 78% -160px, rgba(34, 211, 238, 0.06), transparent 70%),
+    radial-gradient(900px 460px at 12% -120px, rgba(74, 222, 128, 0.06), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Display font for headings + big numbers */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Nicer text selection */
+::selection {
+  background: rgba(74, 222, 128, 0.25);
+  color: #fff;
+}
+
+/* Subtle custom scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #454b55;
+  background-clip: padding-box;
 }
