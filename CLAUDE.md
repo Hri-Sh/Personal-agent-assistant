@@ -29,19 +29,33 @@ When Hridayesh says "time to commit", "let's commit", or anything similar, updat
 
 ## Design System
 
-Dark minimalist. These CSS variables are defined in `src/index.css` and used everywhere:
+Dark, with a stronger visual identity (layered surfaces, subtle gradients + glow, real type). Tokens live in `src/index.css`:
 
 ```css
---bg: #0a0a0a
---surface: #141414
---surface2: #1c1c1c
---border: #2a2a2a
---text: #f5f5f5
---text-muted: #525252
+/* surfaces (layered for depth) */
+--bg: #08090c
+--surface: #121317
+--surface-2: #191b20   /* --surface2 kept as a legacy alias */
+--surface-3: #22252b
+--border: #262a31
+--border-strong: #363b44
+/* text */
+--text: #f4f6f9
+--text-muted: #8b929c  /* lightened for contrast */
+--text-dim: #5b616b
+/* accents + gradients */
 --accent: #4ade80
+--accent-2: #22d3ee
+--accent-blue: #0ea5e9
+--accent-ink: #04140a               /* dark text on accent fills */
+--accent-grad: linear-gradient(135deg, #4ade80, #22d3ee)
+/* radii / shadows / glow */
+--radius-sm/​--radius/​--radius-lg, --shadow-1/​--shadow-2, --glow-accent
 ```
 
-Sidebar nav uses `#0ea5e9` (blue) for active state and hover. Event/accent colors: `#4ade80` green, `#60a5fa` blue, `#f87171` red, `#a78bfa` purple, `#fb923c` orange.
+**Fonts** (loaded from Google Fonts in `index.css`): `--font` = Inter (body), `--font-display` = Space Grotesk (headings + big numbers; `h1/h2/h3` use it globally). The body has a subtle two-tone radial-gradient background.
+
+Primary "add" buttons use `--accent-grad` with `--accent-ink` text + `--glow-accent`. Sidebar active item is a gradient pill with an accent marker. Event/accent colors: `#4ade80` green, `#60a5fa` blue, `#f87171` red, `#a78bfa` purple, `#fb923c` orange.
 
 ---
 
@@ -63,7 +77,7 @@ src/
     Navbar.jsx        # Sidebar nav + XP/level bar (aggregates XP from Supabase counts)
     Navbar.css
     CountUp.jsx       # Animated count-up number (used on Home)
-    BodyMap.jsx       # Front/back muscle map SVG; highlights muscles by training intensity
+    BodyMap.jsx       # Anatomical front/back muscle map (bezier muscle paths, mirrored halves); highlights muscles by training intensity
     BodyMap.css
     AddWorkoutModal.jsx # Modal for logging a workout (name + muscle-group chips + presets)
     AddWorkoutModal.css
@@ -181,7 +195,7 @@ Wired to Supabase (`meals` + `fitness_targets` + `workouts`).
 
 **Nutrition:** loads today's meals (`logged_on = today`) and the first targets row (creates one on first save if none exists). Targets card shows calorie + protein progress bars (today's totals vs target) plus a carbs/fat summary; `EditTargetsModal` edits the targets. Meal log lists each meal with macros + calories and a delete button. `AddMealModal` logs a meal. Uses `dbToMeal` / `mealToDb`.
 
-**Training / muscle map:** loads the last 7 days of `workouts` and computes a per-muscle training-intensity map. The `BodyMap` component renders stylized front/back figures (rounded-rect muscle regions) that light up brighter the more a muscle was hit. `AddWorkoutModal` logs a workout (name + muscle-group chips, with Push/Pull/Legs/etc. presets); a workout log lists each with its muscle tags and a delete button. Muscle groups are defined once in `src/lib/muscles.js`. Logging a workout fires confetti.
+**Training / muscle map:** loads the last 7 days of `workouts` and computes a per-muscle training-intensity map. The `BodyMap` component renders anatomical front/back figures (individual muscles as bezier paths — symmetric muscles authored once and mirrored, midline ones drawn centered) that light up brighter the more a muscle was hit. `AddWorkoutModal` logs a workout (name + muscle-group chips, with Push/Pull/Legs/etc. presets); a workout log lists each with its muscle tags and a delete button. Muscle groups are defined once in `src/lib/muscles.js`. Logging a workout fires confetti.
 
 ### Bucket List (done)
 
