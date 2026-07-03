@@ -72,12 +72,12 @@ src/
   lib/
     supabase.js       # createClient from VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
     confetti.js       # Dependency-free canvas confetti — fireConfetti({ origin, count, ... })
-    muscles.js        # MUSCLE_GROUPS, muscleLabel(), WORKOUT_PRESETS (shared by Fitness + BodyMap)
+    muscles.js        # MUSCLE_GROUPS, muscleLabel(), WORKOUT_PRESETS + recovery model (RECOVERY_STAGES, recoveryFor(), timeAgo()) shared by Fitness + BodyMap
   components/
     Navbar.jsx        # Sidebar nav + XP/level bar (aggregates XP from Supabase counts)
     Navbar.css
     CountUp.jsx       # Animated count-up number (used on Home)
-    BodyMap.jsx       # Anatomical front/back muscle map (bezier muscle paths, mirrored halves); highlights muscles by training intensity
+    BodyMap.jsx       # Anatomical front/back muscle map (bezier paths, mirrored halves): solid silhouette, outlined muscles colored by recovery state, legend + per-muscle "last trained x ago" list
     BodyMap.css
     AddWorkoutModal.jsx # Modal for logging a workout (name + muscle-group chips + presets)
     AddWorkoutModal.css
@@ -195,7 +195,7 @@ Wired to Supabase (`meals` + `fitness_targets` + `workouts`).
 
 **Nutrition:** loads today's meals (`logged_on = today`) and the first targets row (creates one on first save if none exists). Targets card shows calorie + protein progress bars (today's totals vs target) plus a carbs/fat summary; `EditTargetsModal` edits the targets. Meal log lists each meal with macros + calories and a delete button. `AddMealModal` logs a meal. Uses `dbToMeal` / `mealToDb`.
 
-**Training / muscle map:** loads the last 7 days of `workouts` and computes a per-muscle training-intensity map. The `BodyMap` component renders anatomical front/back figures (individual muscles as bezier paths — symmetric muscles authored once and mirrored, midline ones drawn centered) that light up brighter the more a muscle was hit. `AddWorkoutModal` logs a workout (name + muscle-group chips, with Push/Pull/Legs/etc. presets); a workout log lists each with its muscle tags and a delete button. Muscle groups are defined once in `src/lib/muscles.js`. Logging a workout fires confetti.
+**Training / muscle recovery map:** loads the last 30 days of `workouts` and computes each muscle's most recent training timestamp (from `created_at`); the workout log below still displays only the last 7 days. `BodyMap` renders workout-tracker-style anatomical front/back figures: solid dark silhouette (incl. hands/feet), muscles as bold black-outlined bezier shapes (symmetric ones authored once and mirrored, midline ones centered) filled by **recovery state** — red "Just trained" (<24h, breathing glow) → orange "Recovering" (24–60h) → green "Rested" (60h+), never-trained = dark — plus anatomy seam lines (ab rows, sternum, spine, quad/ham seams), a legend, and a two-column per-muscle "last trained x ago" list (fresh dots pulse; times tick every minute via a `now` state in Fitness). Recovery logic lives in `src/lib/muscles.js`. `AddWorkoutModal` logs a workout (name + muscle-group chips, with Push/Pull/Legs/etc. presets). Logging a workout fires confetti.
 
 ### Bucket List (done)
 
@@ -229,16 +229,15 @@ App-wide motion pass, all vanilla CSS: ambient aurora (two blurred drifting colo
 
 ## What's Next (planned order)
 
-1. **Fitness / BodyMap realism** — rework the muscle map to look like a realistic anatomical reference (à la workout-tracker apps): recovery-state coloring per muscle (red = just trained → orange = recovering → green = rested, driven by time since last workout instead of 7-day intensity), plus a per-muscle "last trained X ago" list under the figures. Another all-out visual pass alongside it.
-2. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
-3. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
-4. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
-5. **AI Assistant** — Claude/OpenAI API with tool use:
+1. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
+2. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
+3. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
+4. **AI Assistant** — Claude/OpenAI API with tool use:
    - `get_schedule()`, `add_event()`, `get_habits()`, `get_goals()`, `suggest_time_slot()`
    - **Event prediction** — AI predicts likely upcoming events from patterns
    - **Recurring event generation** — user describes a routine (e.g. "PPL gym split, Mon/Wed/Fri/Sat") and AI bulk-creates events with titles + descriptions auto-filled
    - Daily check-ins, learns preferences over time
-6. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
+5. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
 
 ---
 
