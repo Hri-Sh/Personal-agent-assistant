@@ -34,10 +34,11 @@ function mealToDb(meal, loggedOn) {
 
 function dbToWorkout(row) {
   return {
-    id:       row.id,
-    name:     row.name,
-    muscles:  row.muscles ?? [],
-    loggedOn: row.logged_on,
+    id:        row.id,
+    name:      row.name,
+    muscles:   row.muscles ?? [],
+    loggedOn:  row.logged_on,
+    createdAt: row.created_at,
   }
 }
 
@@ -51,9 +52,11 @@ function daysAgoISO(n) {
 
 export default function Fitness() {
   const today = new Date().toLocaleDateString('en-CA') // 'YYYY-MM-DD'
-  const weekAgo = daysAgoISO(6) // last 7 days inclusive
+  const weekAgo = daysAgoISO(6)   // last 7 days inclusive — workout log display
+  const monthAgo = daysAgoISO(29) // recovery map looks further back
   const [meals, setMeals] = useState([])
   const [workouts, setWorkouts] = useState([])
+  const [now, setNow] = useState(Date.now()) // ticks so "x ago" stays fresh
   const [targets, setTargets] = useState(DEFAULT_TARGETS)
   const [targetsId, setTargetsId] = useState(null)
   const [showMealModal, setShowMealModal] = useState(false)
@@ -74,8 +77,8 @@ export default function Fitness() {
     supabase
       .from('workouts')
       .select('*')
-      .gte('logged_on', weekAgo)
-      .order('logged_on', { ascending: false })
+      .gte('logged_on', monthAgo)
+      .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) { console.error('Error loading workouts:', error); return }
         setWorkouts(data.map(dbToWorkout))
@@ -96,7 +99,13 @@ export default function Fitness() {
           setTargetsId(data[0].id)
         }
       })
-  }, [today, weekAgo])
+  }, [today, monthAgo])
+
+  // Refresh the "last trained x ago" labels every minute
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(t)
+  }, [])
 
   async function handleAddMeal(meal) {
     const { data, error } = await supabase
@@ -165,11 +174,17 @@ export default function Fitness() {
     ? Math.min(100, Math.round((totals.protein / targets.proteinTarget) * 100))
     : 0
 
-  // Muscle intensity over the last 7 days
-  const intensity = {}
+  // Most recent training timestamp per muscle (epoch ms) — drives recovery colors
+  const lastTrained = {}
   for (const w of workouts) {
-    for (const m of w.muscles) intensity[m] = (intensity[m] ?? 0) + 1
+    const ts = new Date(w.createdAt).getTime()
+    if (Number.isNaN(ts)) continue
+    for (const m of w.muscles) {
+      if (!lastTrained[m] || ts > lastTrained[m]) lastTrained[m] = ts
+    }
   }
+
+  const recentWorkouts = workouts.filter(w => w.loggedOn >= weekAgo)
 
   function formatLogged(iso) {
     if (iso === today) return 'Today'
@@ -196,14 +211,14 @@ export default function Fitness() {
 
       {/* Training — muscle map + workout log */}
       <div className="training-card">
-        <span className="fitness-section-label">Muscles trained · last 7 days</span>
-        <BodyMap intensity={intensity} />
+        <span className="fitness-section-label">Muscle recovery</span>
+        <BodyMap lastTrained={lastTrained} now={now} />
 
         <div className="workout-log">
-          {workouts.length === 0 ? (
+          {recentWorkouts.length === 0 ? (
             <p className="workout-empty">No workouts logged this week. Hit “Log Workout” to light up some muscles.</p>
           ) : (
-            workouts.map((w, i) => (
+            recentWorkouts.map((w, i) => (
               <div key={w.id} className="workout-row stagger-item" style={{ '--i': i }}>
                 <div className="workout-info">
                   <span className="workout-name">{w.name}</span>
