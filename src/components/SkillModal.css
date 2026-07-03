@@ -1,0 +1,22 @@
+/* Reuses .modal-overlay, .modal, .modal-actions, .cancel-btn, .submit-btn,
+   .color-picker, .color-dot from AddEventModal.css — only the custom-color
+   swatch is new. */
+
+.color-dot-custom {
+  position: relative;
+  display: inline-block;
+  background:
+    conic-gradient(#f87171, #fb923c, #4ade80, #22d3ee, #a78bfa, #f87171);
+  overflow: hidden;
+}
+
+.color-dot-custom input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+}

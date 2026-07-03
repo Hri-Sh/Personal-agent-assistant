@@ -49,11 +49,17 @@
   font-size: 1.1rem;
   display: grid;
   place-items: center;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
 
 .week-nav:hover {
   background: var(--border);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.week-nav:active {
+  transform: scale(0.92);
 }
 
 .today-btn {
@@ -179,6 +185,8 @@
   display: grid;
   place-items: center;
   font-size: 0.95rem;
+  box-shadow: 0 0 14px -3px rgba(14, 165, 233, 0.7);
+  animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Day body (the time slots) */
@@ -201,11 +209,15 @@
   padding: 4px 7px;
   cursor: pointer;
   overflow: hidden;
-  transition: filter 0.15s;
+  animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  transition: filter 0.15s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s;
 }
 
 .event-card:hover {
   filter: brightness(1.15);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.8);
+  z-index: 5;
 }
 
 .event-title {

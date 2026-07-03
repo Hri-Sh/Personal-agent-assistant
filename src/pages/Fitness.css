@@ -139,6 +139,12 @@
   background: rgba(74, 222, 128, 0.12);
   border-radius: 99px;
   padding: 2px 8px;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s;
+}
+
+.workout-muscle-tag:hover {
+  transform: scale(1.12);
+  background: rgba(74, 222, 128, 0.22);
 }
 
 .workout-date {
@@ -246,7 +252,7 @@
 .fitness-progress-fill {
   height: 6px;
   border-radius: 99px;
-  transition: width 0.2s ease;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .macro-summary {
@@ -288,11 +294,13 @@
   border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .meal-card:hover {
-  border-color: #3a3a3a;
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -14px rgba(0, 0, 0, 0.85);
 }
 
 .meal-info {

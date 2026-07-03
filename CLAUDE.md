@@ -21,7 +21,7 @@ When Hridayesh says "time to commit", "let's commit", or anything similar, updat
 - **React Router DOM** — client-side routing
 - **Lucide React** — icons
 - **Vanilla CSS** with CSS custom properties (no Tailwind, no CSS-in-JS)
-- **Supabase** — integrated for DB (`src/lib/supabase.js`, credentials in `.env`). Auth still planned.
+- **Supabase** — integrated for DB (`src/lib/supabase.js`, credentials in `.env`). Auth still planned. Incremental SQL migrations live in `migrations/` (run manually in the Supabase SQL editor; `schema.sql` stays the full-schema source of truth).
 - **Claude/OpenAI API** — planned for AI assistant (not yet integrated)
 - **Animations** — pure CSS keyframes in `src/styles/animations.css` (imported in `main.jsx`) + a tiny dependency-free canvas confetti engine in `src/lib/confetti.js`. No animation libraries. Honors `prefers-reduced-motion`.
 
@@ -95,8 +95,8 @@ src/
     EditTargetsModal.css
     AddListModal.jsx  # Modal for creating bucket lists
     AddListModal.css
-    AddSkillModal.jsx # Modal for adding skills (name, category, parent)
-    AddSkillModal.css
+    SkillModal.jsx    # One modal for BOTH adding + editing skills (name, custom category, parent, color picker)
+    SkillModal.css
   pages/
     Home.jsx          # Dashboard — hardcoded stats, schedule, goals, AI tip (all static for now)
     Home.css
@@ -203,7 +203,9 @@ Wired to Supabase (`bucket_lists` + `bucket_items`, loaded via `select('*, bucke
 
 ### Skill Tree (done)
 
-Wired to Supabase (`skills`). Recursive `renderNode` lays nodes out with flex (ul/li for positioning only). Connectors are drawn as **glowing SVG bezier branches** in an overlay `<svg>`: node positions are measured via refs + `useLayoutEffect` (recomputed on resize), and each parent→child path is built as a cubic curve. Branches whose parent is unlocked turn category-colored, glow, and animate a draw-in (`stroke-dashoffset`). Nodes show a lock/check badge, name, category (drives accent color), and glow when unlocked. Clicking an available locked node unlocks it (confetti + pulse); clicking an unlocked node re-locks it and cascade-locks descendants. "Blocked" nodes are dimmed until their parent unlocks. Per-node delete (children fall back to roots via `ON DELETE SET NULL`). `AddSkillModal` (name, category datalist, parent select). Uses `dbToSkill` / `skillToDb`.
+Wired to Supabase (`skills`, now including a per-skill `color` column — see `migrations/2026-07-03_add_skill_color.sql`). Recursive `renderNode` lays nodes out with flex (ul/li for positioning only). Connectors are drawn as **glowing SVG bezier branches** in an overlay `<svg>`: node positions are measured via refs + `useLayoutEffect` (recomputed on resize), and each parent→child path is built as a cubic curve. Branches whose parent is unlocked take the **child skill's color**, glow, and animate a draw-in (`stroke-dashoffset`). Nodes show a lock/check badge, name, and category, and glow in `skill.color` when unlocked (legacy category→color mapping kept only as a fallback for old rows). Clicking an available locked node unlocks it (confetti + pulse); clicking an unlocked node re-locks it and cascade-locks descendants. "Blocked" nodes are dimmed until their parent unlocks.
+
+**Add/edit UX:** right-clicking a node (or its hover kebab button) opens an animated context menu — Edit skill / Add child node / Lock–Unlock (disabled while blocked) / Delete. Menu closes on click, right-click elsewhere, Esc, scroll, or resize; position is clamped to the viewport. Both add and edit go through the single `SkillModal` (name, free-text category whose datalist includes every category already in use so custom "directories" persist, parent select — edit mode excludes self + descendants to prevent cycles — and a color picker: 5 preset dots + a rainbow custom swatch wrapping `<input type="color">`). Deleting falls back children to roots via `ON DELETE SET NULL`. Uses `dbToSkill` / `skillToDb` (both include `color`). The context menu markup/styles live in `SkillTree.jsx`/`.css` (page-scoped); `MENU_WIDTH` in JSX must stay in sync with `.skill-menu` width in CSS.
 
 ### Insights (done)
 
@@ -211,7 +213,13 @@ New analytics page wired to Supabase. Three pure-SVG/CSS visualizations (no char
 
 ### Animations & celebrations (done)
 
-`src/styles/animations.css` defines shared keyframes + utility classes used everywhere: `page-enter`, `stagger-item` (with `--i` index for delay), `press`, `fill-animated`, `pop-in`, `check-pop`, `glow-pulse`, `draw-line`. Modals pop in. `src/lib/confetti.js` is a self-contained canvas confetti — `fireConfetti({ origin, count, colors, ... })` — fired on habit completion (full-clear = big burst), goal/bucket-list completion, skill unlock, and workout logging. All respects `prefers-reduced-motion`.
+`src/styles/animations.css` defines shared keyframes + utility classes used everywhere: `page-enter`, `stagger-item` (with `--i` index for delay), `press`, `fill-animated`, `pop-in`, `check-pop`, `glow-pulse`, `draw-line`, plus (UX refresh v2) `aurora-a`/`aurora-b`, `gradient-pan`, `sheen-sweep`, `.text-grad-animated`, `.sheen`. Modals pop in. `src/lib/confetti.js` is a self-contained canvas confetti — `fireConfetti({ origin, count, colors, ... })` — fired on habit completion (full-clear = big burst), goal/bucket-list completion, skill unlock, and workout logging. All respects `prefers-reduced-motion`.
+
+**IMPORTANT — fill-mode rule:** entrance animations must use `animation-fill-mode: backwards`, never `forwards`/`both`. A filled-forward `transform` permanently overrides hover transforms on the same element and turns the animated wrapper into a containing block that breaks `position: fixed` children (modals, context menus). This bug was fixed once already — don't reintroduce it.
+
+### UI/UX refresh v2 (done)
+
+App-wide motion pass, all vanilla CSS: ambient aurora (two blurred drifting color blobs via `body::before/::after` in `index.css`), animated gradient text on the sidebar logo and Home greeting, XP-bar light sweep, staggered sidebar entrance + hover slide, stat-card sheen sweep/glow lift, color bars on habit/goal/bucket cards stretch + glow on hover, sub-task row hover highlights, progress bars ease over 0.7s, timetable event cards pop in and lift, Insights sparkline draw-in + heatmap cell pop + glowing donut, skill nodes fade in and glow in their own color, springy color-picker dots, and a global `:focus-visible` ring.
 
 ### XP & levels (done)
 
@@ -221,15 +229,16 @@ New analytics page wired to Supabase. Three pure-SVG/CSS visualizations (no char
 
 ## What's Next (planned order)
 
-1. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
-2. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
-3. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
-4. **AI Assistant** — Claude/OpenAI API with tool use:
+1. **Fitness / BodyMap realism** — rework the muscle map to look like a realistic anatomical reference (à la workout-tracker apps): recovery-state coloring per muscle (red = just trained → orange = recovering → green = rested, driven by time since last workout instead of 7-day intensity), plus a per-muscle "last trained X ago" list under the figures. Another all-out visual pass alongside it.
+2. **Habits** — remaining nice-to-haves: delete habit, edit habit (toggle + streak + add already done)
+3. **Goals** — optional: link sub-tasks to habits/timetable; edit goal
+4. **Timetable** — remaining nice-to-haves: recurring events toggle in AddEventModal, month view (lower priority — AI assistant will handle recurring events)
+5. **AI Assistant** — Claude/OpenAI API with tool use:
    - `get_schedule()`, `add_event()`, `get_habits()`, `get_goals()`, `suggest_time_slot()`
    - **Event prediction** — AI predicts likely upcoming events from patterns
    - **Recurring event generation** — user describes a routine (e.g. "PPL gym split, Mon/Wed/Fri/Sat") and AI bulk-creates events with titles + descriptions auto-filled
    - Daily check-ins, learns preferences over time
-5. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
+6. **Auth** — Supabase auth added last once core features stable (then set `user_id` on all inserts; tables already have the nullable column)
 
 ---
 
